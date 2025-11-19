@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1SM Bootcamp Sample Schedule</title>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__content">
+        <p class="eyebrow">1SM MCAT Bootcamp</p>
+        <h1>Sample Prep Week · December 13 – 19, 2025</h1>
+        <p class="lede">
+          Explore the full blend of live intensives and independent study blocks
+          for our winter cohort. Toggle event types and tap sessions for more
+          detail.
+        </p>
+        <div class="legend" aria-label="Event legend">
+          <div class="legend__item">
+            <span class="legend__swatch legend__swatch--live"></span>
+            <span>Live facilitation</span>
+          </div>
+          <div class="legend__item">
+            <span class="legend__swatch legend__swatch--homework"></span>
+            <span>Homework / async focus</span>
+          </div>
+        </div>
+        <div class="event-filters" aria-label="Event filters">
+          <label class="filter-pill">
+            <input
+              type="checkbox"
+              data-filter="live"
+              checked
+            />
+            <span>Live events</span>
+          </label>
+          <label class="filter-pill">
+            <input
+              type="checkbox"
+              data-filter="homework"
+              checked
+            />
+            <span>Homework blocks</span>
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="calendar" aria-label="Weekly calendar">
+        <div class="calendar-header" role="row">
+          <div class="calendar-header__spacer" aria-hidden="true"></div>
+          <div class="day-label" role="columnheader">Saturday <span>Dec 13</span></div>
+          <div class="day-label" role="columnheader">Sunday <span>Dec 14</span></div>
+          <div class="day-label" role="columnheader">Monday <span>Dec 15</span></div>
+          <div class="day-label" role="columnheader">Tuesday <span>Dec 16</span></div>
+          <div class="day-label" role="columnheader">Wednesday <span>Dec 17</span></div>
+          <div class="day-label" role="columnheader">Thursday <span>Dec 18</span></div>
+          <div class="day-label" role="columnheader">Friday <span>Dec 19</span></div>
+        </div>
+
+        <div class="calendar-body">
+          <div class="time-axis" id="timeAxis" aria-hidden="true"></div>
+          <div class="day-column" data-day-index="0"></div>
+          <div class="day-column" data-day-index="1"></div>
+          <div class="day-column" data-day-index="2"></div>
+          <div class="day-column" data-day-index="3"></div>
+          <div class="day-column" data-day-index="4"></div>
+          <div class="day-column" data-day-index="5"></div>
+          <div class="day-column" data-day-index="6"></div>
+        </div>
+      </section>
+
+      <aside class="event-details" aria-live="polite">
+        <div class="details-card">
+          <p class="details-label">Selected session</p>
+          <h2 class="details-title" id="detailsTitle">Choose any event</h2>
+          <p class="details-time" id="detailsTime">
+            Use the schedule to explore the learning arc for each day.
+          </p>
+          <p class="details-description" id="detailsDescription">
+            Filters can hide or show live facilitation and homework sessions. Tap
+            again to collapse the details.
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
+      <p class="footer-note">
+        Tip: enable GitHub Pages on the <code>main</code> branch to publish this
+        interactive view.
+      </p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
+
