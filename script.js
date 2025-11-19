@@ -24,7 +24,7 @@
       description: "Full-length diagnostic; simulate testing conditions start to finish."
     },
     {
-      title: "Asynchronous guided FLE Review Assignment · CP Section",
+      title: "Asynchronous guided FLE Review Assignment for the CP section",
       day: "Saturday",
       start: "18:00",
       end: "19:30",
@@ -32,7 +32,7 @@
       description: "Debrief quantitative reasoning with structured prompts."
     },
     {
-      title: "Asynchronous guided FLE Review Assignment · CARS Section",
+      title: "Asynchronous guided FLE Review Assignment for the CARS section",
       day: "Sunday",
       start: "14:00",
       end: "15:30",
@@ -40,7 +40,7 @@
       description: "Narrate strategy choices for each passage and question stem."
     },
     {
-      title: "Asynchronous guided FLE Review Assignment · BB Section",
+      title: "Asynchronous guided FLE Review Assignment for the BB section",
       day: "Sunday",
       start: "16:00",
       end: "17:30",
@@ -48,7 +48,7 @@
       description: "Focus on experimental reasoning and figure interpretation."
     },
     {
-      title: "Asynchronous guided FLE Review Assignment · PS Section",
+      title: "Asynchronous guided FLE Review Assignment for the PS section",
       day: "Sunday",
       start: "18:00",
       end: "19:30",
@@ -96,7 +96,7 @@
       description: "Document key takeaways, blind spots, and action commitments."
     },
     {
-      title: "Personalized CP Assignment (AAMC / UWorld)",
+      title: "Personalized CP Assignment from AAMC / UWorld material",
       day: "Tuesday",
       start: "08:00",
       end: "09:30",
@@ -104,7 +104,7 @@
       description: "Curated practice set mapped to your diagnostic data."
     },
     {
-      title: "Physics Principles & Strategies · Part 1",
+      title: "Physics Principles & Strategies (part 1)",
       day: "Tuesday",
       start: "10:00",
       end: "11:30",
@@ -112,7 +112,7 @@
       description: "Revisit foundations that unlock mechanics + fluids stems."
     },
     {
-      title: "General Chemistry Principles & Strategies · Part 1",
+      title: "General Chemistry Principles & Strategies (part 1)",
       day: "Tuesday",
       start: "12:00",
       end: "13:30",
@@ -120,7 +120,7 @@
       description: "Pattern-match prompt cues with the right equation families."
     },
     {
-      title: "Organic Chemistry Principles & Strategies · Part 1",
+      title: "Organic Chemistry Principles & Strategies (part 1)",
       day: "Tuesday",
       start: "16:00",
       end: "17:30",
@@ -136,7 +136,7 @@
       description: "Team-based scenario that weaves physics, gen chem, and orgo."
     },
     {
-      title: "1SM Scientific Materials & Methods Long Form Assignment #1",
+      title: "1SM Scientific Materials & Methods Long From Assignment #1",
       day: "Tuesday",
       start: "19:45",
       end: "20:30",
@@ -144,7 +144,7 @@
       description: "Template-driven reflection on lab passages and figure logic."
     },
     {
-      title: "AAMC CP Section bank + UWorld · Class Challenge #1 of 3",
+      title: "AAMC CP Section bank + UWorld, Class Challenge #1 of 3",
       day: "Wednesday",
       start: "08:00",
       end: "09:30",
@@ -184,7 +184,7 @@
       description: "Second sprint to reinforce inference tracking."
     },
     {
-      title: "Personalized BB Assignment (AAMC / UWorld)",
+      title: "Personalized BB Assignment from AAMC / UWorld material",
       day: "Thursday",
       start: "08:00",
       end: "09:30",
@@ -192,7 +192,7 @@
       description: "High-yield biology and biochem review drills."
     },
     {
-      title: "Experimental Design Theory & Strategies · Part 1",
+      title: "Experimental Design Theory & Strategies (part 1)",
       day: "Thursday",
       start: "10:00",
       end: "11:30",
@@ -200,7 +200,7 @@
       description: "Strengthen figure-parsing and variable tracing muscles."
     },
     {
-      title: "Building Biochemistry · Part 1",
+      title: "Building Biochemistry (part 1)",
       day: "Thursday",
       start: "12:00",
       end: "13:30",
@@ -208,7 +208,7 @@
       description: "Map enzyme regulation stories to MCAT passage cues."
     },
     {
-      title: "Building Biology · Part 1",
+      title: "Building Biology (part 1)",
       day: "Thursday",
       start: "16:00",
       end: "17:30",
@@ -224,7 +224,7 @@
       description: "Collaborative lab-analysis challenge with cold data."
     },
     {
-      title: "1SM Scientific Materials & Methods Long Form Assignment #2",
+      title: "1SM Scientific Materials & Methods Long From Assignment #2",
       day: "Thursday",
       start: "19:45",
       end: "20:30",
@@ -232,7 +232,7 @@
       description: "Narrate how evidence quality shapes conclusions."
     },
     {
-      title: "AAMC BB Section bank + UWorld · Class Challenge #1 of 3",
+      title: "AAMC BB Section bank + UWorld, Class Challenge #1 of 3",
       day: "Friday",
       start: "08:00",
       end: "09:30",
@@ -264,7 +264,7 @@
       description: "Lock in personalized targets for the next study sprint."
     },
     {
-      title: "Personalized BB Assignment (AAMC / UWorld)",
+      title: "Personalized BB Assignment from AAMC / UWorld material",
       day: "Friday",
       start: "18:00",
       end: "19:30",
@@ -348,7 +348,7 @@
     element.setAttribute("role", "button");
     element.setAttribute("aria-label", `${event.title} on ${event.day} from ${formatRange(event.start, event.end)}`);
     element.style.top = `${top}px`;
-    element.style.height = `${height}px`;
+    element.style.setProperty("--event-height", `${height}px`);
 
     const timeEl = document.createElement("span");
     timeEl.className = "calendar-event__time";
@@ -357,11 +357,16 @@
     const titleEl = document.createElement("h3");
     titleEl.textContent = event.title;
 
-    const descEl = document.createElement("p");
-    descEl.textContent = event.description;
+    element.title = event.title;
+    element.append(timeEl, titleEl);
 
-    element.append(timeEl, titleEl, descEl);
+    const expand = () => element.classList.add("is-expanded");
+    const collapse = () => element.classList.remove("is-expanded");
 
+    element.addEventListener("mouseenter", expand);
+    element.addEventListener("mouseleave", collapse);
+    element.addEventListener("focus", expand);
+    element.addEventListener("blur", collapse);
     element.addEventListener("click", () => handleEventToggle(event, element, id));
     element.addEventListener("keydown", (evt) => {
       if (evt.key === "Enter" || evt.key === " ") {
