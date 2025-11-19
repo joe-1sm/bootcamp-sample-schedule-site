@@ -22,39 +22,34 @@
   <body>
     <header class="site-header">
       <div class="site-header__content">
-        <p class="eyebrow">1SM MCAT Bootcamp</p>
-        <h1>Sample Prep Week · December 13 – 19, 2025</h1>
-        <p class="lede">
-          Explore the full blend of live intensives and independent study blocks
-          for our winter cohort. Toggle event types and tap sessions for more
-          detail.
-        </p>
-        <div class="legend" aria-label="Event legend">
-          <div class="legend__item">
-            <span class="legend__swatch legend__swatch--live"></span>
-            <span>Live facilitation</span>
-          </div>
-          <div class="legend__item">
-            <span class="legend__swatch legend__swatch--homework"></span>
-            <span>Homework / async focus</span>
-          </div>
-        </div>
+        <p class="eyebrow">1SM Winter Break MCAT Bootcamp</p>
+        <h1>
+          <span class="week-label">Week #1</span>
+          <span aria-hidden="true">·</span>
+          <span>December 13 – 19, 2025</span>
+        </h1>
         <div class="event-filters" aria-label="Event filters">
-          <label class="filter-pill">
+          <label class="filter-pill filter-pill--live">
             <input
               type="checkbox"
               data-filter="live"
               checked
             />
-            <span>Live events</span>
+            <span class="filter-pill__checkbox" aria-hidden="true"></span>
+            <span class="filter-pill__label">
+              <span class="filter-pill__title">Live events</span>
+            </span>
           </label>
-          <label class="filter-pill">
+          <label class="filter-pill filter-pill--homework">
             <input
               type="checkbox"
               data-filter="homework"
               checked
             />
-            <span>Homework blocks</span>
+            <span class="filter-pill__checkbox" aria-hidden="true"></span>
+            <span class="filter-pill__label">
+              <span class="filter-pill__title">Assignments</span>
+            </span>
           </label>
         </div>
       </div>
