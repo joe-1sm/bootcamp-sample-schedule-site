@@ -1,6 +1,6 @@
 :root {
   --brand-live: #961a32;
-  --brand-homework: #4b5563;
+  --brand-homework: #bebebe;
   --bg: #ffffff;
   --text: #1d1d1f;
   --muted: #6f6f78;
@@ -47,18 +47,24 @@ img {
   font-weight: 600;
   color: var(--brand-live);
   margin-bottom: 8px;
-  font-size: 0.78rem;
+  font-size: 1rem;
 }
 
 h1 {
   margin: 0 0 12px;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   line-height: 1.2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
-.lede {
-  margin: 0 0 20px;
-  max-width: 640px;
+.week-label {
+  font-size: 0.75em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
   color: var(--muted);
 }
 
@@ -98,25 +104,100 @@ h1 {
 }
 
 .filter-pill {
-  padding: 6px 14px;
-  border: 1px solid var(--line);
+  position: relative;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  font-size: 0.92rem;
+  gap: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  padding: 12px 18px;
+  border: none;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease,
+    opacity 0.2s ease;
 }
 
-.filter-pill input {
-  accent-color: var(--brand-live);
+.filter-pill--live {
+  background: var(--brand-live);
+  color: #fff;
+}
+
+.filter-pill--homework {
+  background: var(--brand-homework);
+  color: #191919;
 }
 
 .filter-pill:hover {
-  border-color: var(--brand-live);
-  color: var(--brand-live);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.filter-pill:focus-within {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.65),
+    0 16px 32px rgba(0, 0, 0, 0.25);
+}
+
+.filter-pill.is-off {
+  opacity: 0.5;
+  filter: saturate(0.8) brightness(0.95);
+}
+
+.filter-pill input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filter-pill__checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  background: transparent;
+}
+
+.filter-pill__checkbox::after {
+  content: "";
+  width: 10px;
+  height: 16px;
+  border-right: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  transform: translateY(1px) rotate(45deg) scale(0);
+  transform-origin: bottom left;
+  transition: transform 0.2s ease;
+}
+
+.filter-pill input:checked + .filter-pill__checkbox {
+  background: #050505;
+  border-color: #050505;
+}
+
+.filter-pill input:checked + .filter-pill__checkbox::after {
+  transform: translateY(-10px) rotate(45deg) scale(1);
+}
+
+.filter-pill__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.filter-pill__title {
+  font-size: 0.95rem;
+  line-height: 1.1;
+}
+
+.filter-pill__hint {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
 }
 
 .layout {
@@ -151,15 +232,22 @@ h1 {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  text-align: center;
 }
 
 .calendar-header__spacer {
   min-height: 1px;
 }
 
+.day-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .day-label span {
   display: block;
-  margin-top: 4px;
   font-size: 0.85rem;
   text-transform: none;
   color: var(--text);
@@ -213,14 +301,15 @@ h1 {
 
 .calendar-event {
   position: absolute;
-  left: 12px;
-  right: 12px;
+  left: 5px;
+  right: 5px;
   border-radius: 12px;
   color: #fff;
-  padding: 12px 14px;
+  padding: 10px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 4px;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, height 0.2s ease;
@@ -255,30 +344,40 @@ h1 {
 
 .calendar-event--homework {
   background: var(--brand-homework);
-  color: #f6f7fb;
+  color: #191919;
 }
 
 .calendar-event h3 {
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.25;
+  font-size: 0.81rem;
+  font-weight: 500;
+  line-height: 1.22;
+  line-clamp: 3;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
+  min-height: 0;
+  flex: 1;
 }
 
 .calendar-event.is-expanded h3 {
+  line-clamp: unset;
   -webkit-line-clamp: unset;
   overflow: visible;
 }
 
 .calendar-event__time {
-  font-weight: 600;
+  font-weight: 300;
   font-size: 0.78rem;
   opacity: 0.9;
+  margin-top: 1px;
+}
+
+.calendar-event.is-compact:not(.is-expanded) .calendar-event__time {
+  display: none;
 }
 
 .calendar-event.is-hidden {

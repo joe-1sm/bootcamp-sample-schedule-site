@@ -14,6 +14,8 @@
     ]
   };
 
+  const MIN_BLOCK_HEIGHT_FOR_TIME = 56;
+
   const events = [
     {
       title: "Complete AAMC #1 under test-like conditions",
@@ -90,7 +92,7 @@
     {
       title: "1SM Long Form FLE Post-Mortem Assignment",
       day: "Monday",
-      start: "19:45",
+      start: "19:30",
       end: "20:30",
       type: "homework",
       description: "Document key takeaways, blind spots, and action commitments."
@@ -138,7 +140,7 @@
     {
       title: "1SM Scientific Materials & Methods Long From Assignment #1",
       day: "Tuesday",
-      start: "19:45",
+      start: "19:30",
       end: "20:30",
       type: "homework",
       description: "Template-driven reflection on lab passages and figure logic."
@@ -226,7 +228,7 @@
     {
       title: "1SM Scientific Materials & Methods Long From Assignment #2",
       day: "Thursday",
-      start: "19:45",
+      start: "19:30",
       end: "20:30",
       type: "homework",
       description: "Narrate how evidence quality shapes conclusions."
@@ -350,15 +352,18 @@
     element.style.top = `${top}px`;
     element.style.setProperty("--event-height", `${height}px`);
 
+    const titleEl = document.createElement("h3");
+    titleEl.textContent = event.title;
+
     const timeEl = document.createElement("span");
     timeEl.className = "calendar-event__time";
     timeEl.textContent = formatRange(event.start, event.end);
 
-    const titleEl = document.createElement("h3");
-    titleEl.textContent = event.title;
+    const hasRoomForTime = height >= MIN_BLOCK_HEIGHT_FOR_TIME;
+    element.classList.toggle("is-compact", !hasRoomForTime);
 
     element.title = event.title;
-    element.append(timeEl, titleEl);
+    element.append(titleEl, timeEl);
 
     const expand = () => element.classList.add("is-expanded");
     const collapse = () => element.classList.remove("is-expanded");
@@ -421,13 +426,21 @@
     };
 
     const inputs = document.querySelectorAll("input[data-filter]");
+    inputs.forEach((input) => syncFilterPillState(input));
     inputs.forEach((input) => {
       input.addEventListener("change", (event) => {
         const type = event.target.dataset.filter;
         filters[type] = event.target.checked;
+        syncFilterPillState(event.target);
         updateFilterState(filters);
       });
     });
+  }
+
+  function syncFilterPillState(input) {
+    const pill = input.closest(".filter-pill");
+    if (!pill) return;
+    pill.classList.toggle("is-off", !input.checked);
   }
 
   function updateFilterState(filters) {
