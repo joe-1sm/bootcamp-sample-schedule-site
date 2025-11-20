@@ -1,7 +1,7 @@
 :root {
   --brand-live: #961a32;
   --brand-homework: #bebebe;
-  --bg: #ececec9a;
+  --bg: #f7f7f7;
   --text: #1d1d1f;
   --muted: #666666;
   --line: #e6e6eb;
@@ -34,7 +34,7 @@ img {
 
 .site-header {
   padding: 48px 6vw 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 100%);
+  background: var(--bg);
 }
 
 .site-header__content {
@@ -99,8 +99,8 @@ img {
 
 h1 {
   margin: 0 0 12px;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  line-height: 1.2;
+  font-size: clamp(1.8rem, 4vw, 2.0rem);
+  line-height: 1.8;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -160,7 +160,7 @@ h1 {
   cursor: pointer;
   padding: 12px 18px;
   border: none;
-  color: #fff;
+  color: #f1f1f3;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease,
     opacity 0.2s ease;
@@ -168,7 +168,7 @@ h1 {
 
 .filter-pill--live {
   background: var(--brand-live);
-  color: #961a32;
+  color: #fff;
 }
 
 .filter-pill--homework {
@@ -265,7 +265,7 @@ h1 {
   background: #fff;
   border-radius: var(--radius);
   border: 1px solid #f1f1f3;
-  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 35px 90px rgba(15, 23, 42, 0.12);
   overflow: hidden;
 }
 
@@ -372,7 +372,7 @@ h1 {
     0 25px 70px rgba(15, 23, 42, 0.18);
 }
 
-.calendar-event:hover {
+.calendar-event:hover:not(.is-active) {
   transform: translateY(-2px);
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
 }
@@ -445,15 +445,17 @@ h1 {
   border-radius: var(--radius);
   padding: 28px;
   background-color: #fff;
-  box-shadow: var(--shadow);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
 }
 
 .details-label {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 0.75rem;
-  color: var(--muted);
+  color: #191919;
   margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px ridge #e0e0e0;
 }
 
 .details-title {
@@ -466,6 +468,11 @@ h1 {
   font-size: 1.0rem;
   font-weight: 600;
   color: var(--brand-live);
+  display: block; /* Explicit default display state */
+}
+
+.details-time.is-hidden {
+  display: none;
 }
 
 .details-description {
@@ -473,6 +480,86 @@ h1 {
   font-size: 0.8rem;
   color: var(--muted);
   white-space: pre-line;
+}
+
+.floating-details-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: none; /* Hidden by default, shown via JS */
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: var(--brand-live);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 8px 24px rgba(150, 26, 50, 0.35), 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateY(100px);
+  pointer-events: none;
+}
+
+.floating-details-btn[aria-hidden="false"] {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  animation: slideUpBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideUpBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.floating-details-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(150, 26, 50, 0.4), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.floating-details-btn:active {
+  transform: translateY(-1px);
+}
+
+.floating-details-btn:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.floating-details-btn svg {
+  width: 20px;
+  height: 20px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+/* Hide floating button on desktop where details panel is visible */
+@media (min-width: 1100px) {
+  .floating-details-btn {
+    display: none !important;
+  }
 }
 
 .site-footer {

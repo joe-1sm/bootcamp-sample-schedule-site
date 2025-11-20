@@ -92,19 +92,29 @@
         </div>
       </section>
 
-      <aside class="event-details" aria-live="polite">
-        <div class="details-card">
+      <aside class="event-details" id="eventDetails" aria-live="polite">
+        <div class="details-card" tabindex="-1">
           <p class="details-label">Selected session</p>
           <h2 class="details-title" id="detailsTitle">Choose any event</h2>
-          <p class="details-time" id="detailsTime">
-            Use the schedule to explore the learning arc for each day.
-          </p>
+          <p class="details-time is-hidden" id="detailsTime"></p>
           <p class="details-description" id="detailsDescription">
             Filters can hide or show live facilitation and homework sessions. Tap
             again to collapse the details.
           </p>
         </div>
       </aside>
+
+      <button 
+        class="floating-details-btn" 
+        id="floatingDetailsBtn"
+        aria-label="View selected session details"
+        aria-hidden="true"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+        <span>View Details</span>
+      </button>
     </main>
 
     <footer class="site-footer">

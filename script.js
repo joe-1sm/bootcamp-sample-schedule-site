@@ -173,15 +173,15 @@
       title: "AAMC CARS Q-pack Sprint #1",
       day: "Wednesday",
       start: "17:00",
-      end: "17:45",
+      end: "18:00",
       type: "homework",
       description: "<strong>WHAT TO DO</strong>\nIn this assignment, you’ll work through three sequential passages from the AAMC CARS QPack. Tackle them under realistic timing, just as you would on a full-length exam.\n\n<strong>STRATEGY FOCUS</strong>\nYour goal is to apply the principles from this afternoon’s CARS lecture: active reading, tracking arguments, using clear logical steps to eliminate choices, and avoiding “vibes-based” guessing. Treat each passage as a chance to practice the exact approach we modeled in class.\n\n<strong>REVIEW AFTERWARD</strong>\nAfter you finish, you’ll follow a set of specific review instructions to go back through your answers and notes. This review is where most of the learning happens—be honest about why you chose each answer, what you missed in the passage, and how you can refine your process for next time."
     },
     {
       title: "AAMC CARS Q-pack Sprint #2",
       day: "Wednesday",
-      start: "18:00",
-      end: "18:45",
+      start: "18:30",
+      end: "19:30",
       type: "homework",
       description: "<strong>WHAT TO DO</strong>\nAfter a brief break, you’ll complete a second CARS QPack sprint: three more passages selected by the 1SM team to highlight the same strategies and critical thinking patterns from today’s CARS lecture.\n\n<strong>STRATEGY FOCUS</strong>\nWork under realistic timing and apply the full approach we’ve been practicing—active reading, tracking the author’s argument, using clear logic to eliminate choices, and resisting the urge to guess based on vibes or familiarity.\n\n<strong>REVIEW BOTH SPRINTS</strong>\nWhen you finish this sprint, you’ll review your work for <em>both</em> CARS QPack sprints back-to-back. As you go, take notes on your thought process: why you chose each answer, what you noticed (or missed) in the passage, and any recurring habits—good or bad. These reflections will guide how you fine-tune your CARS strategy moving forward."
     },
@@ -285,13 +285,18 @@
   const details = {
     titleEl: document.getElementById("detailsTitle"),
     timeEl: document.getElementById("detailsTime"),
-    descriptionEl: document.getElementById("detailsDescription")
+    descriptionEl: document.getElementById("detailsDescription"),
+    container: document.getElementById("eventDetails"),
+    card: document.querySelector(".details-card")
   };
+
+  const floatingBtn = document.getElementById("floatingDetailsBtn");
 
   const defaultDetails = {
     title: "Choose any event",
-    time: "Use the schedule to explore the learning arc for each day.",
-    description: "Filters can hide or show live facilitation and homework sessions. Tap again to collapse the details."
+    time: "",
+    description:
+      "Use the schedule to explore the learning arc for each day. Filters can hide or show live facilitation and homework sessions."
   };
 
   let activeEventId = null;
@@ -306,6 +311,8 @@
     renderTimeAxis();
     renderEvents();
     attachFilterHandlers();
+    attachFloatingButtonHandler();
+    resetActiveState();
   }
 
   function renderTimeAxis() {
@@ -348,6 +355,7 @@
     element.tabIndex = 0;
     element.setAttribute("role", "button");
     element.setAttribute("aria-label", `${event.title} on ${event.day} from ${formatRange(event.start, event.end)}`);
+    element.setAttribute("aria-controls", "eventDetails");
     element.style.top = `${top}px`;
     element.style.setProperty("--event-height", `${height}px`);
 
@@ -365,11 +373,25 @@
     element.append(titleEl, timeEl);
 
     const expand = () => element.classList.add("is-expanded");
-    const collapse = () => element.classList.remove("is-expanded");
+    const collapse = () => {
+      // Don't auto-collapse if this event is actively selected
+      if (activeEventId !== id) {
+        element.classList.remove("is-expanded");
+      }
+    };
 
-    element.addEventListener("mouseenter", expand);
+    element.addEventListener("mouseenter", () => {
+      // Don't auto-expand if another event is actively selected
+      if (activeEventId !== id) {
+        expand();
+      }
+    });
     element.addEventListener("mouseleave", collapse);
-    element.addEventListener("focus", expand);
+    element.addEventListener("focus", () => {
+      if (activeEventId !== id) {
+        expand();
+      }
+    });
     element.addEventListener("blur", collapse);
     element.addEventListener("click", () => handleEventToggle(event, element, id));
     element.addEventListener("keydown", (evt) => {
@@ -390,23 +412,31 @@
 
     if (activeElement) {
       activeElement.classList.remove("is-active");
+      activeElement.classList.remove("is-expanded"); // Clean up previous active element
     }
 
     element.classList.add("is-active");
+    element.classList.add("is-expanded"); // Keep selected event expanded
     activeElement = element;
     activeEventId = id;
     updateDetails(eventData);
   }
 
   function resetActiveState() {
-    activeEventId = null;
     if (activeElement) {
       activeElement.classList.remove("is-active");
+      activeElement.classList.remove("is-expanded"); // Clean up expansion state
       activeElement = null;
     }
+    activeEventId = null;
     details.titleEl.textContent = defaultDetails.title;
     details.timeEl.textContent = defaultDetails.time;
+    details.timeEl.classList.add("is-hidden");
+    details.timeEl.style.display = "none"; // Force hide with inline style
     details.descriptionEl.textContent = defaultDetails.description;
+    
+    // Hide floating button when no event is selected
+    hideFloatingButton();
   }
 
   function updateDetails(eventData) {
@@ -415,7 +445,12 @@
       eventData.start,
       eventData.end
     )}`;
+    details.timeEl.classList.remove("is-hidden");
+    details.timeEl.style.display = "block"; // Force display with inline style
     details.descriptionEl.innerHTML = eventData.description;
+    
+    // Show floating button on mobile
+    showFloatingButton();
   }
 
   function attachFilterHandlers() {
@@ -473,6 +508,41 @@
     const hour12 = h % 12 === 0 ? 12 : h % 12;
     const minutes = String(m).padStart(2, "0");
     return `${hour12}:${minutes} ${suffix}`;
+  }
+
+  function showFloatingButton() {
+    if (!floatingBtn) return;
+    floatingBtn.setAttribute("aria-hidden", "false");
+  }
+
+  function hideFloatingButton() {
+    if (!floatingBtn) return;
+    floatingBtn.setAttribute("aria-hidden", "true");
+  }
+
+  function attachFloatingButtonHandler() {
+    if (!floatingBtn) return;
+    
+    floatingBtn.addEventListener("click", () => {
+      if (!details.container) return;
+      
+      // Smooth scroll to details panel
+      details.container.scrollIntoView({ 
+        behavior: "smooth", 
+        block: "start" 
+      });
+      
+      // Focus the details card for keyboard users after a short delay
+      setTimeout(() => {
+        if (details.card) {
+          details.card.focus();
+        }
+      }, 500); // Wait for scroll to mostly complete
+      
+      // Optional: Hide button after click to reduce clutter
+      // Uncomment if you want the button to disappear after use:
+      // setTimeout(hideFloatingButton, 600);
+    });
   }
 
   init();
