@@ -63,7 +63,7 @@
       start: "10:00",
       end: "11:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nIn this CP section-to-section session, we will work through new passages and questions that mirror the logic patterns from some of the most challenging problems you saw over the weekend. You’ll practice applying those same problem-solving strategies to fresh scenarios.\n\n<strong>FIRST-PRINCIPLES THINKING</strong>\nWe’ll revisit key concepts from the FLE review and introduce a few new ones, showing how they fit together. The focus is on thinking from first principles: using basic chemistry and physics ideas to break down complex, unfamiliar problems.\n\n<strong>QUANTITATIVE STRATEGY</strong>\nWe’ll also review CP-specific passage and question approaches that leverage quantitative reasoning to find efficient solutions without reading every word or relying on massive amounts of memorized content. The goal is fast, clear logic—not heroic amounts of brute-force reading."
+      description: "<strong>WHAT TO EXPECT</strong>\nIn this CP section dissection session, we will work through new passages and questions that mirror the logic patterns from some of the most challenging problems you saw over the weekend. You’ll practice applying those same problem-solving strategies to fresh scenarios.\n\n<strong>FIRST-PRINCIPLES THINKING</strong>\nWe’ll revisit key concepts from the FLE review and introduce a few new ones, showing how they fit together. The focus is on thinking from first principles: using basic chemistry and physics ideas to break down complex, unfamiliar problems.\n\n<strong>QUANTITATIVE STRATEGY</strong>\nWe’ll also review CP-specific passage and question approaches that leverage quantitative reasoning to find efficient solutions without reading every word or relying on massive amounts of memorized content. The goal is fast, clear logic—not heroic amounts of brute-force reading."
     },
     {
       title: "CARS Section Dissection",
@@ -71,7 +71,7 @@
       start: "12:00",
       end: "13:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nThis CARS section-to-section session is the CARS-focused counterpart to the CP session. We’ll tackle new passages and questions that echo the logic and difficulty of the most challenging CARS problems from your full-length exam.\n\n<strong>FATIGUE & FOCUS</strong>\nThere’s only a short break between CP and CARS, so you’ll be practicing CARS while already mentally tired from quantitative work. That’s intentional—test day feels like this. We’ll work on maintaining focus, pacing, and decision-making even when your brain is a bit fried.\n\n<strong>CARS REASONING PRACTICE</strong>\nWe’ll emphasize the same careful, step-by-step reasoning you used in your CARS review: tracking arguments, evaluating evidence, and eliminating choices using logic rather than vibes. The goal is to transfer those skills to new, unfamiliar passages under realistic test-day conditions."
+      description: "<strong>WHAT TO EXPECT</strong>\nThis CARS section disssection session is the CARS-focused counterpart to the CP session. We’ll tackle new passages and questions that echo the logic and difficulty of the most challenging CARS problems from your full-length exam.\n\n<strong>FATIGUE & FOCUS</strong>\nThere’s only a short break between CP and CARS, so you’ll be practicing CARS while already mentally tired from quantitative work. That’s intentional—test day feels like this. We’ll work on maintaining focus, pacing, and decision-making even when your brain is a bit fried.\n\n<strong>CARS REASONING PRACTICE</strong>\nWe’ll emphasize the same careful, step-by-step reasoning you used in your CARS review: tracking arguments, evaluating evidence, and eliminating choices using logic rather than vibes. The goal is to transfer those skills to new, unfamiliar passages under realistic test-day conditions."
     },
     {
       title: "BB Section Dissection",
@@ -79,7 +79,7 @@
       start: "16:00",
       end: "17:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nThis Bio/Biochem section-to-section takes place after a longer break in the afternoon, just like the real MCAT. We’ll work through some of the most challenging Bio/Biochem-style passages, with an extra focus on how you approach and dissect them.\n\n<strong>EXPERIMENTAL DESIGN & DATA</strong>\nWe’ll emphasize experimental design, the scientific method, and data interpretation as the backbone of Bio/Biochem passages. You’ll practice identifying hypotheses, controls, variables, and what the data actually support, so you can reason through complicated figures and setups with confidence.\n\n<strong>FIRST-PRINCIPLES BIOLOGY</strong>\nBecause many students are stronger in biology, the test often raises the difficulty by using novel, technical scenarios. We’ll lean on basic principles from chemistry and physics and fundamentals like the central dogma to build a first-principles understanding of complex, unfamiliar techniques, rather than trying to memorize every possible method in advance."
+      description: "<strong>WHAT TO EXPECT</strong>\nThis Bio/Biochem section dissection session takes place after a longer break in the afternoon, just like the real MCAT. We’ll work through some of the most challenging Bio/Biochem-style passages, with an extra focus on how you approach and dissect them.\n\n<strong>EXPERIMENTAL DESIGN & DATA</strong>\nWe’ll emphasize experimental design, the scientific method, and data interpretation as the backbone of Bio/Biochem passages. You’ll practice identifying hypotheses, controls, variables, and what the data actually support, so you can reason through complicated figures and setups with confidence.\n\n<strong>FIRST-PRINCIPLES BIOLOGY</strong>\nBecause many students are stronger in biology, the test often raises the difficulty by using novel, technical scenarios. We’ll lean on basic principles from chemistry and physics and fundamentals like the central dogma to build a first-principles understanding of complex, unfamiliar techniques, rather than trying to memorize every possible method in advance."
     },
     {
       title: "PS Section Dissection",
@@ -87,7 +87,7 @@
       start: "18:00",
       end: "19:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nThis Psych/Soc section-to-section comes at the end of the day, after a short break from Bio/Biochem, mirroring how mentally tired you’ll feel on the real exam. We’ll work through new Psych/Soc-style passages and questions that resemble the difficulty and style of your full-length exam.\n\n<strong>DATA & LOGIC IN PS</strong>\nWe’ll focus on interpreting data from psychological and sociological studies, applying clear logical reasoning to understand what the results actually show (and what they don’t). You’ll practice connecting study designs, variables, and outcomes to core Psych/Soc concepts.\n\n<strong>INTEGRATING YOUR SKILLS</strong>\nPsych/Soc blends skills from CARS and Bio/Biochem: tracking stated logic, drawing sound conclusions, and evaluating the quality of experimental design. This session is about bringing those skills together so you can handle complex, research-based PS questions with confidence at the end of a long test day."
+      description: "<strong>WHAT TO EXPECT</strong>\nThis Psych/Soc section dissection session comes at the end of the day, after a short break from Bio/Biochem, mirroring how mentally tired you’ll feel on the real exam. We’ll work through new Psych/Soc-style passages and questions that resemble the difficulty and style of your full-length exam.\n\n<strong>DATA & LOGIC IN PS</strong>\nWe’ll focus on interpreting data from psychological and sociological studies, applying clear logical reasoning to understand what the results actually show (and what they don’t). You’ll practice connecting study designs, variables, and outcomes to core Psych/Soc concepts.\n\n<strong>INTEGRATING YOUR SKILLS</strong>\nPsych/Soc blends skills from CARS and Bio/Biochem: tracking stated logic, drawing sound conclusions, and evaluating the quality of experimental design. This session is about bringing those skills together so you can handle complex, research-based PS questions with confidence at the end of a long test day."
     },
     {
       title: "1SM Long Form FLE Post-Mortem Assignment",
@@ -167,7 +167,7 @@
       start: "14:00",
       end: "16:00",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nWednesday afternoon is fully dedicated to CARS. In this first of four 1SM CARS Bootcamp Curriculum lectures, we’ll lay out core CARS passage strategy in a structured, step-by-step way.\n\n<strong>STRATEGY & APPLICATION</strong>\nWe’ll build directly on the skills and ideas from Monday’s CARS section-to-section, then demonstrate how to apply those strategies to specific passages and questions. You’ll see exactly how to read, annotate (when appropriate), and decision-make under realistic timing.\n\n<strong>PERSONALIZED GUIDANCE</strong>\nBeyond general strategy, we’ll give situation-based feedback and advice tailored to you: what you personally need to focus on, how to implement CARS practice day to day outside of class, and how to adjust your habits so your effort actually turns into score gains."
+      description: "<strong>WHAT TO EXPECT</strong>\nWednesday afternoon is fully dedicated to CARS. In this first of four 1SM CARS Bootcamp Curriculum lectures, we’ll lay out core CARS passage strategy in a structured, step-by-step way.\n\n<strong>STRATEGY & APPLICATION</strong>\nWe’ll build directly on the skills and ideas from Monday’s CARS section dissection session, then demonstrate how to apply those strategies to specific passages and questions. You’ll see exactly how to read, annotate (when appropriate), and decision-make under realistic timing.\n\n<strong>PERSONALIZED GUIDANCE</strong>\nBeyond general strategy, we’ll give situation-based feedback and advice tailored to you: what you personally need to focus on, how to implement CARS practice day to day outside of class, and how to adjust your habits so your effort actually turns into score gains."
     },
     {
       title: "AAMC CARS Q-pack Sprint #1",
@@ -364,7 +364,7 @@
 
     const timeEl = document.createElement("span");
     timeEl.className = "calendar-event__time";
-    timeEl.textContent = formatRange(event.start, event.end);
+    timeEl.textContent = formatRangeCompact(event.start, event.end);
 
     const hasRoomForTime = height >= MIN_BLOCK_HEIGHT_FOR_TIME;
     element.classList.toggle("is-compact", !hasRoomForTime);
@@ -508,6 +508,38 @@
     const hour12 = h % 12 === 0 ? 12 : h % 12;
     const minutes = String(m).padStart(2, "0");
     return `${hour12}:${minutes} ${suffix}`;
+  }
+
+  function formatTimeCompact(timeString) {
+    const [h, m] = timeString.split(":").map(Number);
+    const suffix = h >= 12 ? "PM" : "AM";
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    // Drop :00 for times on the hour
+    if (m === 0) {
+      return `${hour12} ${suffix}`;
+    }
+    const minutes = String(m).padStart(2, "0");
+    return `${hour12}:${minutes} ${suffix}`;
+  }
+
+  function formatRangeCompact(start, end) {
+    const startFormatted = formatTimeCompact(start);
+    const endFormatted = formatTimeCompact(end);
+    
+    // Extract AM/PM from both times
+    const startParts = startFormatted.split(" ");
+    const endParts = endFormatted.split(" ");
+    const startTime = startParts[0];
+    const startPeriod = startParts[1];
+    const endTime = endParts[0];
+    const endPeriod = endParts[1];
+    
+    // If both have same AM/PM, only show it once at the end
+    if (startPeriod === endPeriod) {
+      return `${startTime} – ${endTime} ${endPeriod}`;
+    }
+    
+    return `${startTime} ${startPeriod} – ${endTime} ${endPeriod}`;
   }
 
   function showFloatingButton() {
