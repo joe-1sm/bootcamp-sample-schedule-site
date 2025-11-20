@@ -56,36 +56,113 @@ img {
   flex: 1 1 300px;
 }
 
-.cta-pill {
+/* Circular ghost button in details card */
+.details-cta {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 22px;
-  border-radius: 999px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  gap: 8px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 2px solid var(--brand-live);
+  border-radius: 50%;
+  background: rgba(150, 26, 50, 0.04);
+  color: var(--brand-live);
   text-decoration: none;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(150, 26, 50, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+  animation: ctaPulse 3s ease-in-out infinite;
+}
+
+@keyframes ctaPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(150, 26, 50, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(150, 26, 50, 0.25), 0 3px 6px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.details-cta svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.details-cta__text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, color 0.3s ease;
+  pointer-events: none;
+  color: inherit;
+}
+
+.details-cta:hover {
+  width: 140px;
+  padding: 0 18px 0 14px;
+  border-radius: 24px;
   background: var(--brand-live);
   color: #fff;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-width: 140px;
-  text-align: center;
+  border-color: var(--brand-live);
+  box-shadow: 0 8px 20px rgba(150, 26, 50, 0.3), 0 4px 8px rgba(0, 0, 0, 0.15);
+  animation: none; /* Stop pulse on hover */
 }
 
-.cta-pill--secondary {
-  background: #111827;
+.details-cta:hover .details-cta__text {
+  opacity: 1;
+  transform: translateX(0);
   color: #fff;
 }
 
-.cta-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2);
+.details-cta:hover svg {
+  transform: translateX(-2px);
+  color: #fff;
 }
 
-.cta-pill:focus-visible {
-  outline: 3px solid rgba(150, 26, 50, 0.4);
+.details-cta:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(150, 26, 50, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.details-cta:focus-visible {
+  outline: 2px solid rgba(150, 26, 50, 0.5);
   outline-offset: 2px;
+}
+
+/* Show text by default on mobile (no hover state) */
+@media (max-width: 1100px) {
+  .details-cta {
+    width: auto;
+    padding: 0 18px 0 14px;
+    border-radius: 24px;
+    background: var(--brand-live);
+    color: #fff;
+    border-color: var(--brand-live);
+    animation: none; /* No pulse on mobile */
+  }
+  
+  .details-cta__text {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    color: #fff;
+  }
+  
+  .details-cta svg {
+    color: #fff;
+  }
 }
 
 .eyebrow {
@@ -146,49 +223,96 @@ h1 {
 
 .event-filters {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
 }
 
 .filter-pill {
   position: relative;
-  border-radius: 999px;
   display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
+  align-items: stretch;
+  gap: 0;
+  font-weight: 500;
   cursor: pointer;
-  padding: 12px 18px;
+  padding: 0;
   border: none;
-  color: #f1f1f3;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease,
-    opacity 0.2s ease;
+  background: transparent;
+  transition: opacity 0.2s ease;
+  user-select: none;
 }
 
-.filter-pill--live {
+/* Toggle switch */
+.filter-pill__checkbox {
+  order: 1;
+  z-index: 2;
+}
+
+/* Label capsule - extends from toggle */
+.filter-pill__label {
+  order: 2;
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 12px 0 8px;
+  border-radius: 0 12px 12px 0;
+  transition: all 0.3s ease;
+  margin-left: -6px;
+  width: 120px;
+}
+
+/* Live sessions - red capsule, white text */
+.filter-pill--live .filter-pill__label {
   background: var(--brand-live);
   color: #fff;
 }
 
-.filter-pill--homework {
+/* Assignments - gray capsule, black text */
+.filter-pill--homework .filter-pill__label {
   background: var(--brand-homework);
   color: #191919;
 }
 
+/* Green indicator light at the end */
+.filter-pill::after {
+  content: "";
+  order: 3;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+  align-self: center;
+}
+
+/* Show green light when checked */
+.filter-pill:has(input:checked)::after {
+  opacity: 1;
+}
+
+/* Show green light when checked */
+.filter-pill:has(input:checked)::after {
+  opacity: 1;
+}
+
 .filter-pill:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+  opacity: 0.85;
 }
 
 .filter-pill:focus-within {
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.65),
-    0 16px 32px rgba(0, 0, 0, 0.25);
+  outline: none;
 }
 
 .filter-pill.is-off {
-  opacity: 0.5;
-  filter: saturate(0.8) brightness(0.95);
+  opacity: 0.4;
+}
+
+/* Dim capsule background when off */
+.filter-pill.is-off .filter-pill__label {
+  opacity: 0.6;
 }
 
 .filter-pill input {
@@ -197,54 +321,57 @@ h1 {
   pointer-events: none;
 }
 
+/* Toggle Switch Track */
 .filter-pill__checkbox {
-  width: 24px;
+  position: relative;
+  width: 42px;
   height: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
+/* Toggle Switch Circle */
 .filter-pill__checkbox::after {
   content: "";
-  width: 10px;
-  height: 16px;
-  border-right: 3px solid #fff;
-  border-bottom: 3px solid #fff;
-  transform: translateY(1px) rotate(45deg) scale(0);
-  transform-origin: bottom left;
-  transition: transform 0.2s ease;
+  position: absolute;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Both filters - neutral dark gray when ON */
 .filter-pill input:checked + .filter-pill__checkbox {
-  background: #050505;
-  border-color: #050505;
+  background: #475569;
+  border-color: #475569;
 }
 
+/* Thumb turns white when ON */
 .filter-pill input:checked + .filter-pill__checkbox::after {
-  transform: translateY(-10px) rotate(45deg) scale(1);
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  left: 20px;
 }
 
 .filter-pill__label {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  color: var(--text);
 }
 
 .filter-pill__title {
-  font-size: 0.95rem;
-  line-height: 1.1;
-}
-
-.filter-pill__hint {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.75;
+  font-size: 0.9rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: inherit;
 }
 
 .layout {
@@ -441,9 +568,11 @@ h1 {
 }
 
 .details-card {
+  position: relative;
   border: 1px solid #f1f1f3;
   border-radius: var(--radius);
   padding: 28px;
+  padding-bottom: 80px; /* Extra space for the circular button */
   background-color: #fff;
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
 }
