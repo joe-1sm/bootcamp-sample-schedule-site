@@ -1,9 +1,9 @@
 :root {
   --brand-live: #961a32;
   --brand-homework: #bebebe;
-  --bg: #ffffff;
+  --bg: #ececec9a;
   --text: #1d1d1f;
-  --muted: #6f6f78;
+  --muted: #666666;
   --line: #e6e6eb;
   --hour-height: 60px;
   --hours-count: 14;
@@ -39,6 +39,53 @@ img {
 
 .site-header__content {
   max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-top__text {
+  flex: 1 1 300px;
+}
+
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  background: var(--brand-live);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 140px;
+  text-align: center;
+}
+
+.cta-pill--secondary {
+  background: #111827;
+  color: #fff;
+}
+
+.cta-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.2);
+}
+
+.cta-pill:focus-visible {
+  outline: 3px solid rgba(150, 26, 50, 0.4);
+  outline-offset: 2px;
 }
 
 .eyebrow {
@@ -121,7 +168,7 @@ h1 {
 
 .filter-pill--live {
   background: var(--brand-live);
-  color: #fff;
+  color: #961a32;
 }
 
 .filter-pill--homework {
@@ -411,18 +458,21 @@ h1 {
 
 .details-title {
   margin: 0 0 6px;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
 }
 
 .details-time {
   margin: 0 0 8px;
+  font-size: 1.0rem;
   font-weight: 600;
   color: var(--brand-live);
 }
 
 .details-description {
   margin: 0;
+  font-size: 0.8rem;
   color: var(--muted);
+  white-space: pre-line;
 }
 
 .site-footer {
