@@ -18,6 +18,20 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <script>
+      // Send height updates to parent window
+      function sendHeight() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({ type: 'resize', height: height }, '*');
+      }
+      
+      // Send height on load and when content changes
+      window.addEventListener('load', sendHeight);
+      window.addEventListener('resize', sendHeight);
+      
+      // Check periodically for dynamic content changes
+      setInterval(sendHeight, 500);
+    </script>
   </head>
   <body>
     <header class="site-header">
