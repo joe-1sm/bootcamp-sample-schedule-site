@@ -896,3 +896,261 @@ h1 {
   }
 }
 
+/* ============================================
+   MOBILE DAY SWITCHER
+   ============================================ */
+
+/* Hide on desktop, show on mobile/tablet */
+.day-switcher {
+  display: block;
+}
+
+@media (min-width: 1100px) {
+  .day-switcher {
+    display: none;
+  }
+}
+
+/* Hide main header date range on mobile */
+.hide-on-mobile {
+  display: inline;
+}
+
+@media (max-width: 767px) {
+  .hide-on-mobile {
+    display: none;
+  }
+}
+
+/* ============================================
+   DAY NAVIGATION BAR
+   ============================================ */
+
+.day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  
+  /* Sticky positioning with iOS safe area support */
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.day-nav__btn {
+  /* Touch-friendly size */
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  
+  /* Styling */
+  border: 1.5px solid #d1d5db;
+  border-radius: 50%;
+  background: white;
+  color: #475569;
+  cursor: pointer;
+  
+  /* Flexbox centering for SVG */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Transitions */
+  transition: all 0.2s ease;
+}
+
+.day-nav__btn:hover:not(:disabled) {
+  background: var(--brand-live);
+  border-color: var(--brand-live);
+  color: white;
+  transform: scale(1.05);
+}
+
+.day-nav__btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.day-nav__btn:disabled,
+.day-nav__btn[aria-disabled="true"] {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.day-nav__btn:focus-visible {
+  outline: 2px solid var(--brand-live);
+  outline-offset: 2px;
+}
+
+.day-nav__current {
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+  flex: 1;
+  padding: 0 16px;
+  color: #1e293b;
+  
+  /* Prevent text overflow on very narrow screens */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 400px) {
+  .day-nav__current {
+    font-size: 1rem;
+    padding: 0 12px;
+  }
+  
+  .day-nav__btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+/* ============================================
+   VIEW TOGGLE PILLS
+   ============================================ */
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid var(--line);
+  justify-content: center;
+  flex-wrap: wrap; /* Wrap on very narrow screens */
+}
+
+.view-toggle__pill {
+  /* Touch-friendly size */
+  padding: 10px 20px;
+  min-height: 44px;
+  
+  /* Styling */
+  border: 1.5px solid #d1d5db;
+  border-radius: 22px;
+  background: white;
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  
+  /* Transitions */
+  transition: all 0.25s ease;
+  
+  /* Prevent text selection */
+  user-select: none;
+}
+
+.view-toggle__pill:hover:not(.view-toggle__pill--active) {
+  background: #f8f9fa;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.view-toggle__pill:active {
+  transform: translateY(0);
+}
+
+.view-toggle__pill--active,
+.view-toggle__pill[aria-checked="true"] {
+  background: var(--brand-live);
+  color: white;
+  border-color: var(--brand-live);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+
+.view-toggle__pill:focus-visible {
+  outline: 2px solid var(--brand-live);
+  outline-offset: 2px;
+}
+
+@media (max-width: 400px) {
+  .view-toggle__pill {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ============================================
+   CALENDAR VIEW STATES
+   ============================================ */
+
+/* Base: All columns hidden by default when day switcher active */
+.calendar.day-switcher-active .day-column,
+.calendar.day-switcher-active .calendar-header > .day-label {
+  display: none;
+}
+
+/* Show only visible columns */
+.calendar.day-switcher-active .day-column.day-column--visible,
+.calendar.day-switcher-active .calendar-header > .day-label.day-label--visible {
+  display: block;
+}
+
+/* 1-Day View: Single column, full width */
+@media (max-width: 1099px) {
+  .calendar.view-1-day.day-switcher-active .calendar-header {
+    grid-template-columns: 100px 1fr;
+  }
+  
+  .calendar.view-1-day.day-switcher-active .calendar-body {
+    grid-template-columns: 100px 1fr;
+  }
+}
+
+/* 3-Day View: Three columns */
+@media (max-width: 1099px) {
+  .calendar.view-3-day.day-switcher-active .calendar-header {
+    grid-template-columns: 80px repeat(3, minmax(0, 1fr));
+  }
+  
+  .calendar.view-3-day.day-switcher-active .calendar-body {
+    grid-template-columns: 80px repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* 7-Day View: All columns, horizontal scroll on mobile */
+@media (max-width: 767px) {
+  .calendar.view-7-day.day-switcher-active {
+    overflow-x: auto;
+  }
+}
+
+/* ============================================
+   TRANSITIONS & ANIMATIONS
+   ============================================ */
+
+/* Smooth view transitions (respects prefers-reduced-motion) */
+@media (prefers-reduced-motion: no-preference) {
+  .calendar-body,
+  .calendar-header {
+    transition: grid-template-columns 0.25s ease;
+  }
+  
+  .day-column,
+  .day-label {
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* Reduced motion: Instant transitions */
+@media (prefers-reduced-motion: reduce) {
+  .calendar-body,
+  .calendar-header,
+  .day-column,
+  .day-label {
+    transition: none;
+  }
+}
+

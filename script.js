@@ -303,6 +303,44 @@
   let activeElement = null;
   const renderedEvents = [];
 
+  // ============================================
+  // DAY SWITCHER STATE & LOGIC
+  // ============================================
+  
+  /**
+   * Day view state object
+   * Manages current view mode, day index, and visibility
+   */
+  const dayViewState = {
+    currentView: 1,              // 1, 3, or 7 days
+    currentDayIndex: 0,          // 0-6 (Saturday-Friday)
+    visibleDayIndices: [0],      // Array of visible day indices
+    isMobile: false,             // Viewport < 1100px
+    totalDays: 7,                // Total days in schedule
+    savedScrollTop: 0            // Preserve scroll position when switching
+  };
+
+  /**
+   * DOM element references (cached for performance)
+   */
+  const dayViewElements = {
+    switcher: null,
+    navPrev: null,
+    navNext: null,
+    navCurrent: null,
+    viewPills: [],
+    calendar: null,
+    calendarBody: null,
+    dayColumns: [],
+    dayLabels: []
+  };
+
+  /**
+   * Event-to-day-index map (built during renderEvents)
+   * Addresses architect's concern about finding event day indices
+   */
+  const eventToDayIndex = {};
+
   function init() {
     document.documentElement.style.setProperty(
       "--hour-height",
@@ -312,6 +350,7 @@
     renderEvents();
     attachFilterHandlers();
     attachFloatingButtonHandler();
+    initDaySwitcher(); // NEW: Initialize day switcher
     resetActiveState();
   }
 
@@ -336,6 +375,10 @@
       const element = createEventElement(event);
       column.appendChild(element);
       renderedEvents.push({ element, data: event });
+      
+      // ARCHITECT FIX: Build event-to-day-index map for checkActiveEventVisibility
+      const id = `${event.day}-${event.start}`;
+      eventToDayIndex[id] = columnIdx;
     });
   }
 
@@ -575,6 +618,452 @@
       // Uncomment if you want the button to disappear after use:
       // setTimeout(hideFloatingButton, 600);
     });
+  }
+
+  // ============================================
+  // DAY SWITCHER IMPLEMENTATION
+  // ============================================
+
+  /**
+   * Initialize day switcher
+   * Called from main init() function
+   */
+  function initDaySwitcher() {
+    // Cache DOM elements
+    dayViewElements.switcher = document.getElementById('daySwitcher');
+    dayViewElements.navPrev = document.getElementById('dayNavPrev');
+    dayViewElements.navNext = document.getElementById('dayNavNext');
+    dayViewElements.navCurrent = document.getElementById('dayNavCurrent');
+    dayViewElements.viewPills = document.querySelectorAll('.view-toggle__pill');
+    dayViewElements.calendar = document.querySelector('.calendar');
+    dayViewElements.calendarBody = document.querySelector('.calendar-body');
+    dayViewElements.dayColumns = document.querySelectorAll('.day-column');
+    dayViewElements.dayLabels = document.querySelectorAll('.calendar-header > .day-label');
+    
+    // Exit if DOM not ready
+    if (!dayViewElements.switcher || !dayViewElements.calendar) {
+      console.warn('Day switcher elements not found');
+      return;
+    }
+    
+    // Check viewport and set initial state
+    checkViewport();
+    
+    // Attach event handlers
+    attachDaySwitcherHandlers();
+    
+    // Load saved preference (with guards)
+    loadViewPreference();
+    
+    // Initial render - ARCHITECT FIX: Ensure nav display updated after preference load
+    updateVisibleDays();
+    updateDayNavDisplay();
+    updateViewToggleButtons();
+  }
+
+  /**
+   * Check viewport size and set mobile flag
+   * Desktop (≥1100px) always shows 7-day view
+   */
+  function checkViewport() {
+    dayViewState.isMobile = window.innerWidth < 1100;
+    
+    if (!dayViewState.isMobile) {
+      // Desktop: Force 7-day view, hide switcher
+      dayViewState.currentView = 7;
+      dayViewState.currentDayIndex = 0;
+      dayViewState.visibleDayIndices = [0, 1, 2, 3, 4, 5, 6];
+      
+      if (dayViewElements.calendar) {
+        dayViewElements.calendar.classList.remove('day-switcher-active');
+      }
+    } else {
+      // Mobile/Tablet: Enable switcher
+      if (dayViewElements.calendar) {
+        dayViewElements.calendar.classList.add('day-switcher-active');
+      }
+      
+      // On first load, default to 1-day view
+      if (dayViewState.currentView === 7 && !sessionStorage.getItem('bootcamp-calendar-view')) {
+        dayViewState.currentView = 1;
+      }
+    }
+  }
+
+  /**
+   * Attach all event handlers for day switcher
+   */
+  function attachDaySwitcherHandlers() {
+    // View toggle pills
+    dayViewElements.viewPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const view = parseInt(pill.dataset.view, 10);
+        handleViewToggle(view);
+      });
+    });
+    
+    // Navigation buttons
+    if (dayViewElements.navPrev) {
+      dayViewElements.navPrev.addEventListener('click', () => {
+        if (!dayViewElements.navPrev.disabled) {
+          handleDayNavigation('prev');
+        }
+      });
+    }
+    
+    if (dayViewElements.navNext) {
+      dayViewElements.navNext.addEventListener('click', () => {
+        if (!dayViewElements.navNext.disabled) {
+          handleDayNavigation('next');
+        }
+      });
+    }
+    
+    // Keyboard navigation (arrow keys)
+    document.addEventListener('keydown', (e) => {
+      if (!dayViewState.isMobile) return;
+      
+      // Only handle if not typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (!dayViewElements.navPrev.disabled) {
+          handleDayNavigation('prev');
+        }
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (!dayViewElements.navNext.disabled) {
+          handleDayNavigation('next');
+        }
+      }
+    });
+    
+    // Window resize handler (debounced)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const wasMobile = dayViewState.isMobile;
+        checkViewport();
+        
+        // If switched between mobile/desktop
+        if (wasMobile !== dayViewState.isMobile) {
+          updateVisibleDays();
+          updateDayNavDisplay();
+          updateViewToggleButtons();
+        }
+      }, 250);
+    });
+  }
+
+  /**
+   * Handle view toggle button click
+   * @param {number} viewCount - 1, 3, or 7
+   */
+  function handleViewToggle(viewCount) {
+    if (!dayViewState.isMobile) return;
+    
+    // Save scroll position
+    if (dayViewElements.calendarBody) {
+      dayViewState.savedScrollTop = dayViewElements.calendarBody.scrollTop;
+    }
+    
+    // Update state
+    dayViewState.currentView = viewCount;
+    
+    // Adjust currentDayIndex if it would overflow
+    const maxIndex = dayViewState.totalDays - viewCount;
+    if (dayViewState.currentDayIndex > maxIndex) {
+      dayViewState.currentDayIndex = Math.max(0, maxIndex);
+    }
+    
+    // Save preference
+    saveViewPreference(viewCount);
+    
+    // Update UI
+    updateVisibleDays();
+    updateDayNavDisplay();
+    updateViewToggleButtons();
+    
+    // Restore scroll position after render
+    requestAnimationFrame(() => {
+      if (dayViewElements.calendarBody) {
+        dayViewElements.calendarBody.scrollTop = dayViewState.savedScrollTop;
+      }
+    });
+    
+    // Check if active event is now hidden
+    checkActiveEventVisibility();
+  }
+
+  /**
+   * Handle navigation arrow click
+   * @param {string} direction - 'prev' or 'next'
+   */
+  function handleDayNavigation(direction) {
+    if (!dayViewState.isMobile) return;
+    
+    // Save scroll position
+    if (dayViewElements.calendarBody) {
+      dayViewState.savedScrollTop = dayViewElements.calendarBody.scrollTop;
+    }
+    
+    const step = dayViewState.currentView;
+    
+    if (direction === 'prev') {
+      // Move backwards by step, don't go below 0
+      dayViewState.currentDayIndex = Math.max(0, dayViewState.currentDayIndex - step);
+    } else {
+      // Move forwards by step, respect week boundary
+      const maxIndex = dayViewState.totalDays - dayViewState.currentView;
+      dayViewState.currentDayIndex = Math.min(maxIndex, dayViewState.currentDayIndex + step);
+    }
+    
+    // Update UI
+    updateVisibleDays();
+    updateDayNavDisplay();
+    
+    // Restore scroll position after render
+    requestAnimationFrame(() => {
+      if (dayViewElements.calendarBody) {
+        dayViewElements.calendarBody.scrollTop = dayViewState.savedScrollTop;
+      }
+    });
+    
+    // Check if active event is now hidden
+    checkActiveEventVisibility();
+  }
+
+  /**
+   * Update which day columns are visible based on state
+   */
+  function updateVisibleDays() {
+    if (!dayViewState.isMobile) {
+      // Desktop: Show all days
+      showAllDays();
+      return;
+    }
+    
+    const { currentView, currentDayIndex } = dayViewState;
+    
+    // Calculate visible day indices
+    const visibleIndices = [];
+    for (let i = 0; i < currentView; i++) {
+      const index = currentDayIndex + i;
+      if (index < dayViewState.totalDays) {
+        visibleIndices.push(index);
+      }
+    }
+    
+    dayViewState.visibleDayIndices = visibleIndices;
+    
+    // Update DOM
+    updateCalendarColumns();
+    updateCalendarHeaders();
+    updateCalendarViewClass();
+  }
+
+  /**
+   * Show/hide appropriate day columns
+   */
+  function updateCalendarColumns() {
+    dayViewElements.dayColumns.forEach((column, index) => {
+      const isVisible = dayViewState.visibleDayIndices.includes(index);
+      column.classList.toggle('day-column--visible', isVisible);
+    });
+  }
+
+  /**
+   * Show/hide appropriate day headers
+   */
+  function updateCalendarHeaders() {
+    dayViewElements.dayLabels.forEach((label, index) => {
+      const isVisible = dayViewState.visibleDayIndices.includes(index);
+      label.classList.toggle('day-label--visible', isVisible);
+    });
+  }
+
+  /**
+   * Update calendar class for CSS targeting
+   */
+  function updateCalendarViewClass() {
+    const calendar = dayViewElements.calendar;
+    if (!calendar) return;
+    
+    // Remove old view classes
+    calendar.classList.remove('view-1-day', 'view-3-day', 'view-7-day');
+    
+    // Add current view class
+    calendar.classList.add(`view-${dayViewState.currentView}-day`);
+  }
+
+  /**
+   * Show all days (desktop mode)
+   */
+  function showAllDays() {
+    dayViewElements.dayColumns.forEach(column => {
+      column.classList.add('day-column--visible');
+    });
+    
+    dayViewElements.dayLabels.forEach(label => {
+      label.classList.add('day-label--visible');
+    });
+    
+    if (dayViewElements.calendar) {
+      dayViewElements.calendar.classList.remove('view-1-day', 'view-3-day', 'view-7-day');
+    }
+  }
+
+  /**
+   * Update day navigation display text
+   * Shows current date range
+   */
+  function updateDayNavDisplay() {
+    if (!dayViewElements.navCurrent) return;
+    
+    const { currentView, currentDayIndex } = dayViewState;
+    const startDay = calendarConfig.days[currentDayIndex];
+    
+    if (!startDay) return;
+    
+    let displayText = '';
+    
+    if (currentView === 1) {
+      // "Saturday, Dec 13"
+      displayText = `${startDay.name}, ${formatDateShort(startDay.iso)}`;
+    } else if (currentView === 3) {
+      // "Sat 13 – Mon 15"
+      const endIndex = Math.min(currentDayIndex + 2, dayViewState.totalDays - 1);
+      const endDay = calendarConfig.days[endIndex];
+      displayText = `${startDay.name.substring(0, 3)} ${getDayNumber(startDay.iso)} – ${endDay.name.substring(0, 3)} ${getDayNumber(endDay.iso)}`;
+    } else {
+      // "Dec 13 – 19"
+      displayText = "Dec 13 – 19";
+    }
+    
+    dayViewElements.navCurrent.textContent = displayText;
+    
+    // Update navigation button states
+    updateNavigationButtons();
+  }
+
+  /**
+   * Enable/disable navigation buttons based on boundaries
+   * No wrapping allowed - stop at week edges
+   */
+  function updateNavigationButtons() {
+    if (!dayViewElements.navPrev || !dayViewElements.navNext) return;
+    
+    const { currentDayIndex, currentView, totalDays } = dayViewState;
+    
+    // Disable prev if at start
+    const atStart = currentDayIndex === 0;
+    dayViewElements.navPrev.disabled = atStart;
+    dayViewElements.navPrev.setAttribute('aria-disabled', atStart ? 'true' : 'false');
+    
+    // Disable next if at or beyond end
+    const atEnd = currentDayIndex + currentView >= totalDays;
+    dayViewElements.navNext.disabled = atEnd;
+    dayViewElements.navNext.setAttribute('aria-disabled', atEnd ? 'true' : 'false');
+  }
+
+  /**
+   * Update view toggle button active states
+   */
+  function updateViewToggleButtons() {
+    dayViewElements.viewPills.forEach(pill => {
+      const view = parseInt(pill.dataset.view, 10);
+      const isActive = view === dayViewState.currentView;
+      
+      pill.classList.toggle('view-toggle__pill--active', isActive);
+      pill.setAttribute('aria-checked', isActive ? 'true' : 'false');
+    });
+  }
+
+  /**
+   * Check if currently selected event is still visible
+   * Reset details panel if it's hidden
+   * ARCHITECT FIX: Uses eventToDayIndex map instead of searching calendarConfig.days
+   */
+  function checkActiveEventVisibility() {
+    if (!activeEventId) return;
+    
+    // Find which day the active event is on using the map
+    const activeEventDayIndex = eventToDayIndex[activeEventId];
+    
+    if (activeEventDayIndex === undefined) return;
+    
+    // Check if that day is still visible
+    const isVisible = dayViewState.visibleDayIndices.includes(activeEventDayIndex);
+    
+    if (!isVisible) {
+      // Active event is now hidden, reset details panel
+      resetActiveState();
+    }
+  }
+
+  /**
+   * Format date for display (e.g., "Dec 13")
+   * @param {string} isoDate - ISO date string
+   * @returns {string}
+   */
+  function formatDateShort(isoDate) {
+    const date = new Date(isoDate);
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const day = date.getDate();
+    return `${month} ${day}`;
+  }
+
+  /**
+   * Get day number from ISO date
+   * @param {string} isoDate
+   * @returns {number}
+   */
+  function getDayNumber(isoDate) {
+    return new Date(isoDate).getDate();
+  }
+
+  /**
+   * Save view preference to sessionStorage
+   * @param {number} view
+   */
+  function saveViewPreference(view) {
+    try {
+      sessionStorage.setItem('bootcamp-calendar-view', view.toString());
+    } catch (e) {
+      console.warn('Failed to save view preference:', e);
+    }
+  }
+
+  /**
+   * Load view preference from sessionStorage
+   * Includes guard against stale/invalid values
+   * ARCHITECT FIX: Ensures nav display is updated after clamping
+   */
+  function loadViewPreference() {
+    if (!dayViewState.isMobile) return;
+    
+    try {
+      const saved = sessionStorage.getItem('bootcamp-calendar-view');
+      if (saved) {
+        let view = parseInt(saved, 10);
+        
+        // Guard: Clamp to valid range
+        if (view < 1) view = 1;
+        if (view > 7) view = 7;
+        
+        // Guard: If saved view would overflow, reduce it
+        const remainingDays = dayViewState.totalDays - dayViewState.currentDayIndex;
+        if (view > remainingDays) {
+          view = remainingDays;
+        }
+        
+        dayViewState.currentView = view;
+      }
+    } catch (e) {
+      console.warn('Failed to load view preference:', e);
+    }
   }
 
   init();

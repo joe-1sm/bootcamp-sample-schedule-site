@@ -43,7 +43,7 @@
             <h1>
               <span class="week-label">Week #1</span>
               <span aria-hidden="true">·</span>
-              <span>December 13 – 19, 2025</span>
+              <span class="hide-on-mobile">December 13 – 19, 2025</span>
             </h1>
           </div>
         </div>
@@ -73,6 +73,74 @@
         </div>
       </div>
     </header>
+
+    <!-- NEW: Mobile Day Switcher (hidden on desktop ≥1100px) -->
+    <div class="day-switcher" id="daySwitcher">
+      <!-- Sticky Navigation Bar -->
+      <nav class="day-nav" aria-label="Calendar day navigation">
+        <button 
+          class="day-nav__btn day-nav__btn--prev" 
+          id="dayNavPrev" 
+          aria-label="Previous day"
+          aria-disabled="false"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        
+        <div 
+          class="day-nav__current" 
+          id="dayNavCurrent" 
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          Saturday, Dec 13
+        </div>
+        
+        <button 
+          class="day-nav__btn day-nav__btn--next" 
+          id="dayNavNext" 
+          aria-label="Next day"
+          aria-disabled="false"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </nav>
+      
+      <!-- View Toggle Pills -->
+      <div class="view-toggle" role="radiogroup" aria-label="Calendar view density">
+        <button 
+          class="view-toggle__pill view-toggle__pill--active" 
+          data-view="1" 
+          role="radio" 
+          aria-checked="true"
+          id="viewToggle1"
+        >
+          1 Day
+        </button>
+        <button 
+          class="view-toggle__pill" 
+          data-view="3" 
+          role="radio" 
+          aria-checked="false"
+          id="viewToggle3"
+        >
+          3 Days
+        </button>
+        <button 
+          class="view-toggle__pill" 
+          data-view="7" 
+          role="radio" 
+          aria-checked="false"
+          id="viewToggle7"
+        >
+          7 Days
+        </button>
+      </div>
+    </div>
 
     <main class="layout">
       <section class="calendar" aria-label="Weekly calendar">
@@ -166,4 +234,3 @@
     <script src="script.js?v=2.0"></script>
   </body>
 </html>
-
