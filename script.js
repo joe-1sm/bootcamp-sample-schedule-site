@@ -821,13 +821,14 @@
       dayViewState.savedScrollTop = dayViewElements.calendarBody.scrollTop;
     }
     
-    const step = dayViewState.currentView;
+    // Always move by 1 day, regardless of current view
+    const step = 1;
     
     if (direction === 'prev') {
-      // Move backwards by step, don't go below 0
+      // Move backwards by 1 day, don't go below 0
       dayViewState.currentDayIndex = Math.max(0, dayViewState.currentDayIndex - step);
     } else {
-      // Move forwards by step, respect week boundary
+      // Move forwards by 1 day, respect week boundary
       const maxIndex = dayViewState.totalDays - dayViewState.currentView;
       dayViewState.currentDayIndex = Math.min(maxIndex, dayViewState.currentDayIndex + step);
     }
@@ -948,8 +949,8 @@
       // "Sat (12/13) - Tues (12/15)" format
       const endIndex = Math.min(currentDayIndex + 2, dayViewState.totalDays - 1);
       const endDay = calendarConfig.days[endIndex];
-      const startAbbrev = startDay.name.substring(0, startDay.name === "Thursday" || startDay.name === "Saturday" ? 4 : 3);
-      const endAbbrev = endDay.name.substring(0, endDay.name === "Thursday" || endDay.name === "Saturday" ? 4 : 3);
+      const startAbbrev = getDayAbbreviation(startDay.name);
+      const endAbbrev = getDayAbbreviation(endDay.name);
       displayText = `${startAbbrev} (${formatDateMD(startDay.iso)}) - ${endAbbrev} (${formatDateMD(endDay.iso)})`;
     } else if (currentView === 7) {
       // "Dec 13 – 19" for full week view
@@ -1049,6 +1050,24 @@
   function formatDateMD(isoDate) {
     const [year, month, day] = isoDate.split('-').map(Number);
     return `${month}/${day}`;
+  }
+
+  /**
+   * Get day abbreviation
+   * @param {string} dayName - Full day name
+   * @returns {string} Abbreviated day name
+   */
+  function getDayAbbreviation(dayName) {
+    const abbreviations = {
+      'Saturday': 'Sat',
+      'Sunday': 'Sun',
+      'Monday': 'Mon',
+      'Tuesday': 'Tues',
+      'Wednesday': 'Wed',
+      'Thursday': 'Thurs',
+      'Friday': 'Fri'
+    };
+    return abbreviations[dayName] || dayName;
   }
 
   /**
