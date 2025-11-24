@@ -421,7 +421,6 @@ h1 {
 }
 
 .day-label span {
-  display: block;
   font-size: 0.85rem;
   text-transform: none;
   color: var(--text);
@@ -431,32 +430,32 @@ h1 {
 
 /* Day name abbreviation logic: Full names on wide screens, abbreviations on medium screens */
 .day-label__abbr {
-  display: none; /* Hidden by default */
+  display: none !important; /* Hidden by default */
 }
 
 .day-label__full {
-  display: inline; /* Shown by default */
+  display: block !important; /* Shown by default */
 }
 
 /* Medium screens (900px - 1099px): Use abbreviations to prevent text running together */
 @media (max-width: 1099px) and (min-width: 900px) {
   .day-label__full {
-    display: none;
+    display: none !important;
   }
   
   .day-label__abbr {
-    display: inline;
+    display: block !important;
   }
 }
 
 /* Smaller screens (below 900px but before mobile switcher): Also use abbreviations */
 @media (max-width: 899px) and (min-width: 768px) {
   .day-label__full {
-    display: none;
+    display: none !important;
   }
   
   .day-label__abbr {
-    display: inline;
+    display: block !important;
   }
 }
 
