@@ -1112,8 +1112,8 @@ h1 {
   }
 }
 
-/* Hide 7-day option on mobile */
-@media (max-width: 1099px) {
+/* Hide 7-day option on mobile only (tablets can still use it) */
+@media (max-width: 767px) {
   .view-toggle__pill[data-view="7"] {
     display: none;
   }
@@ -1157,7 +1157,12 @@ h1 {
   }
 }
 
-/* 7-Day View: Not available on mobile (only 1 and 3-day views) */
+/* 7-Day View: Available on tablet (768-1099px), not on true mobile (<768px) */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .calendar.view-7-day.day-switcher-active {
+    overflow-x: auto; /* Allow horizontal scroll if needed on smaller tablets */
+  }
+}
 
 /* ============================================
    TRANSITIONS & ANIMATIONS

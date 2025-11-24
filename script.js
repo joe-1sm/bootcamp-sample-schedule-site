@@ -664,9 +664,13 @@
   /**
    * Check viewport size and set mobile flag
    * Desktop (≥1100px) always shows 7-day view
+   * Tablet (768-1099px) shows switcher with all 3 options, defaults to 7-day
+   * Mobile (<768px) shows switcher with 1/3-day only, defaults to 1-day
    */
   function checkViewport() {
-    dayViewState.isMobile = window.innerWidth < 1100;
+    const width = window.innerWidth;
+    dayViewState.isMobile = width < 1100;
+    const isTrueMobile = width < 768;
     
     if (!dayViewState.isMobile) {
       // Desktop: Force 7-day view, hide switcher
@@ -683,9 +687,13 @@
         dayViewElements.calendar.classList.add('day-switcher-active');
       }
       
-      // On first load, default to 1-day view
-      if (dayViewState.currentView === 7 && !sessionStorage.getItem('bootcamp-calendar-view')) {
-        dayViewState.currentView = 1;
+      // On first load without saved preference
+      if (!sessionStorage.getItem('bootcamp-calendar-view')) {
+        // True mobile: default to 1-day, Tablet: keep 7-day
+        if (isTrueMobile && dayViewState.currentView === 7) {
+          dayViewState.currentView = 1;
+        }
+        // Tablet keeps 7-day view by default
       }
     }
   }
@@ -759,13 +767,14 @@
 
   /**
    * Handle view toggle button click
-   * @param {number} viewCount - 1 or 3 (mobile only supports these)
+   * @param {number} viewCount - 1, 3, or 7 (true mobile <768px only supports 1 and 3)
    */
   function handleViewToggle(viewCount) {
     if (!dayViewState.isMobile) return;
     
-    // Mobile only supports 1 and 3-day views
-    if (viewCount !== 1 && viewCount !== 3) return;
+    // True mobile (<768px) only supports 1 and 3-day views, tablet allows 7-day too
+    const isTrueMobile = window.innerWidth < 768;
+    if (isTrueMobile && viewCount !== 1 && viewCount !== 3) return;
     
     // Save scroll position
     if (dayViewElements.calendarBody) {
@@ -942,6 +951,9 @@
       const startAbbrev = startDay.name.substring(0, startDay.name === "Thursday" || startDay.name === "Saturday" ? 4 : 3);
       const endAbbrev = endDay.name.substring(0, endDay.name === "Thursday" || endDay.name === "Saturday" ? 4 : 3);
       displayText = `${startAbbrev} (${formatDateMD(startDay.iso)}) - ${endAbbrev} (${formatDateMD(endDay.iso)})`;
+    } else if (currentView === 7) {
+      // "Dec 13 – 19" for full week view
+      displayText = "Dec 13 – 19";
     }
     
     dayViewElements.navCurrent.textContent = displayText;
@@ -1059,21 +1071,36 @@
   function loadViewPreference() {
     if (!dayViewState.isMobile) return;
     
+    const isTrueMobile = window.innerWidth < 768;
+    
     try {
       const saved = sessionStorage.getItem('bootcamp-calendar-view');
       if (saved) {
         let view = parseInt(saved, 10);
         
-        // Guard: Clamp to valid range (1 or 3 only on mobile)
+        // Guard: Clamp to valid range
         if (view < 1) view = 1;
-        if (view > 3) view = 3; // Mobile max is 3-day view
-        if (view === 2) view = 1; // Only 1 and 3 are valid
+        
+        if (isTrueMobile) {
+          // True mobile: Only 1 and 3 are valid
+          if (view > 3) view = 3;
+          if (view === 2) view = 1;
+        } else {
+          // Tablet: 1, 3, and 7 are all valid
+          if (view > 7) view = 7;
+          if (view === 2) view = 1;
+          if (view > 3 && view < 7) view = 3; // Clamp 4,5,6 to 3
+        }
         
         // Guard: If saved view would overflow, reduce it
         const remainingDays = dayViewState.totalDays - dayViewState.currentDayIndex;
         if (view > remainingDays) {
-          view = Math.min(3, remainingDays);
-          if (view === 2) view = 1;
+          if (isTrueMobile) {
+            view = Math.min(3, remainingDays);
+            if (view === 2) view = 1;
+          } else {
+            view = Math.min(7, remainingDays);
+          }
         }
         
         dayViewState.currentView = view;
