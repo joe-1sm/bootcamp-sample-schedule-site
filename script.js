@@ -669,6 +669,9 @@
    */
   function checkViewport() {
     const width = window.innerWidth;
+    const wasMobile = dayViewState.isMobile;
+    const wasView = dayViewState.currentView;
+    
     dayViewState.isMobile = width < 1200;
     const isTrueMobile = width < 768;
     
@@ -690,6 +693,11 @@
       // True mobile: If currently in 7-day view, switch to 3-day (since 7-day button is hidden)
       if (isTrueMobile && dayViewState.currentView === 7) {
         dayViewState.currentView = 3;
+        // Adjust day index if needed
+        const maxIndex = dayViewState.totalDays - dayViewState.currentView;
+        if (dayViewState.currentDayIndex > maxIndex) {
+          dayViewState.currentDayIndex = Math.max(0, maxIndex);
+        }
       }
       
       // On first load without saved preference
@@ -700,6 +708,13 @@
         }
         // Tablet keeps current view (or 7-day by default)
       }
+    }
+    
+    // If view changed, update the display
+    if (wasView !== dayViewState.currentView || wasMobile !== dayViewState.isMobile) {
+      updateVisibleDays();
+      updateDayNavDisplay();
+      updateViewToggleButtons();
     }
   }
 
