@@ -758,9 +758,9 @@ h1 {
   height: 100%;
   z-index: 10000;
   display: none;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: 120px 20px 20px;
 }
 
 .embed-modal[aria-hidden="false"] {

@@ -583,19 +583,28 @@
   (function initEmbedModal() {
     const isEmbedded = window.self !== window.top;
     
+    console.log('Embed check:', isEmbedded ? 'IN IFRAME' : 'STANDALONE');
+    
     if (!isEmbedded) {
+      console.log('Not in iframe - modal disabled');
       return; // Exit if not in iframe
     }
+    
+    console.log('In iframe - modal will show in 5 seconds');
     
     const modal = document.getElementById('embedModal');
     const closeBtn = document.getElementById('modalClose');
     
-    if (!modal || !closeBtn) return;
+    if (!modal || !closeBtn) {
+      console.error('Modal elements not found!');
+      return;
+    }
     
-    // Show modal after 60 seconds
+    // Show modal after 20 seconds
     setTimeout(() => {
       modal.setAttribute('aria-hidden', 'false');
-    }, 60000); // 60 seconds
+      console.log('Embed modal should now be visible');
+    }, 20000); // 20 seconds
     
     // Close modal when X button is clicked
     closeBtn.addEventListener('click', () => {
