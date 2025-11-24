@@ -429,6 +429,37 @@ h1 {
   letter-spacing: normal;
 }
 
+/* Day name abbreviation logic: Full names on wide screens, abbreviations on medium screens */
+.day-label__abbr {
+  display: none; /* Hidden by default */
+}
+
+.day-label__full {
+  display: inline; /* Shown by default */
+}
+
+/* Medium screens (900px - 1099px): Use abbreviations to prevent text running together */
+@media (max-width: 1099px) and (min-width: 900px) {
+  .day-label__full {
+    display: none;
+  }
+  
+  .day-label__abbr {
+    display: inline;
+  }
+}
+
+/* Smaller screens (below 900px but before mobile switcher): Also use abbreviations */
+@media (max-width: 899px) and (min-width: 768px) {
+  .day-label__full {
+    display: none;
+  }
+  
+  .day-label__abbr {
+    display: inline;
+  }
+}
+
 .calendar-body {
   display: grid;
   grid-template-columns: 100px repeat(7, minmax(0, 1fr));
