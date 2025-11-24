@@ -1082,6 +1082,13 @@ h1 {
   }
 }
 
+/* Hide 7-day option on mobile */
+@media (max-width: 1099px) {
+  .view-toggle__pill[data-view="7"] {
+    display: none;
+  }
+}
+
 /* ============================================
    CALENDAR VIEW STATES
    ============================================ */
@@ -1120,12 +1127,7 @@ h1 {
   }
 }
 
-/* 7-Day View: All columns, horizontal scroll on mobile */
-@media (max-width: 767px) {
-  .calendar.view-7-day.day-switcher-active {
-    overflow-x: auto;
-  }
-}
+/* 7-Day View: Not available on mobile (only 1 and 3-day views) */
 
 /* ============================================
    TRANSITIONS & ANIMATIONS

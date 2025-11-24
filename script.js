@@ -759,10 +759,13 @@
 
   /**
    * Handle view toggle button click
-   * @param {number} viewCount - 1, 3, or 7
+   * @param {number} viewCount - 1 or 3 (mobile only supports these)
    */
   function handleViewToggle(viewCount) {
     if (!dayViewState.isMobile) return;
+    
+    // Mobile only supports 1 and 3-day views
+    if (viewCount !== 1 && viewCount !== 3) return;
     
     // Save scroll position
     if (dayViewElements.calendarBody) {
@@ -933,13 +936,12 @@
       // "Saturday, Dec 13"
       displayText = `${startDay.name}, ${formatDateShort(startDay.iso)}`;
     } else if (currentView === 3) {
-      // "Sat 13 – Mon 15"
+      // "Sat (12/13) - Tues (12/15)" format
       const endIndex = Math.min(currentDayIndex + 2, dayViewState.totalDays - 1);
       const endDay = calendarConfig.days[endIndex];
-      displayText = `${startDay.name.substring(0, 3)} ${getDayNumber(startDay.iso)} – ${endDay.name.substring(0, 3)} ${getDayNumber(endDay.iso)}`;
-    } else {
-      // "Dec 13 – 19"
-      displayText = "Dec 13 – 19";
+      const startAbbrev = startDay.name.substring(0, startDay.name === "Thursday" || startDay.name === "Saturday" ? 4 : 3);
+      const endAbbrev = endDay.name.substring(0, endDay.name === "Thursday" || endDay.name === "Saturday" ? 4 : 3);
+      displayText = `${startAbbrev} (${formatDateMD(startDay.iso)}) - ${endAbbrev} (${formatDateMD(endDay.iso)})`;
     }
     
     dayViewElements.navCurrent.textContent = displayText;
@@ -1005,23 +1007,36 @@
 
   /**
    * Format date for display (e.g., "Dec 13")
-   * @param {string} isoDate - ISO date string
+   * @param {string} isoDate - ISO date string (YYYY-MM-DD)
    * @returns {string}
    */
   function formatDateShort(isoDate) {
-    const date = new Date(isoDate);
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
-    const day = date.getDate();
-    return `${month} ${day}`;
+    // Parse ISO date directly to avoid timezone issues
+    const [year, month, day] = isoDate.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
+    const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+    return `${monthName} ${day}`;
   }
 
   /**
-   * Get day number from ISO date
-   * @param {string} isoDate
+   * Get day number from ISO date (timezone-safe)
+   * @param {string} isoDate - ISO date string (YYYY-MM-DD)
    * @returns {number}
    */
   function getDayNumber(isoDate) {
-    return new Date(isoDate).getDate();
+    // Parse directly from string to avoid timezone conversion issues
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return day;
+  }
+
+  /**
+   * Format date as M/D (e.g., "12/13")
+   * @param {string} isoDate - ISO date string (YYYY-MM-DD)
+   * @returns {string}
+   */
+  function formatDateMD(isoDate) {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return `${month}/${day}`;
   }
 
   /**
@@ -1049,14 +1064,16 @@
       if (saved) {
         let view = parseInt(saved, 10);
         
-        // Guard: Clamp to valid range
+        // Guard: Clamp to valid range (1 or 3 only on mobile)
         if (view < 1) view = 1;
-        if (view > 7) view = 7;
+        if (view > 3) view = 3; // Mobile max is 3-day view
+        if (view === 2) view = 1; // Only 1 and 3 are valid
         
         // Guard: If saved view would overflow, reduce it
         const remainingDays = dayViewState.totalDays - dayViewState.currentDayIndex;
         if (view > remainingDays) {
-          view = remainingDays;
+          view = Math.min(3, remainingDays);
+          if (view === 2) view = 1;
         }
         
         dayViewState.currentView = view;
