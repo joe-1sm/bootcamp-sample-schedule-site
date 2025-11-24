@@ -315,7 +315,7 @@
     currentView: 1,              // 1, 3, or 7 days
     currentDayIndex: 0,          // 0-6 (Saturday-Friday)
     visibleDayIndices: [0],      // Array of visible day indices
-    isMobile: false,             // Viewport < 1100px
+    isMobile: false,             // Viewport < 1200px
     totalDays: 7,                // Total days in schedule
     savedScrollTop: 0            // Preserve scroll position when switching
   };
@@ -663,13 +663,13 @@
 
   /**
    * Check viewport size and set mobile flag
-   * Desktop (≥1100px) always shows 7-day view
-   * Tablet (768-1099px) shows switcher with all 3 options, defaults to 7-day
+   * Desktop (≥1200px) always shows 7-day view with side-by-side layout
+   * Tablet (768-1199px) shows switcher with all 3 options, defaults to 7-day
    * Mobile (<768px) shows switcher with 1/3-day only, defaults to 1-day
    */
   function checkViewport() {
     const width = window.innerWidth;
-    dayViewState.isMobile = width < 1100;
+    dayViewState.isMobile = width < 1200;
     const isTrueMobile = width < 768;
     
     if (!dayViewState.isMobile) {

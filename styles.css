@@ -381,7 +381,7 @@ h1 {
   padding: 0 6vw 60px;
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1200px) {
   .layout {
     grid-template-columns: minmax(0, 3fr) minmax(320px, 1fr);
     align-items: start;
@@ -437,8 +437,8 @@ h1 {
   display: block !important; /* Shown by default */
 }
 
-/* Medium screens (900px - 1099px): Use abbreviations to prevent text running together */
-@media (max-width: 1099px) and (min-width: 900px) {
+/* Medium screens (900px - 1199px): Use abbreviations to prevent text running together */
+@media (max-width: 1199px) and (min-width: 900px) {
   .day-label__full {
     display: none !important;
   }
@@ -715,7 +715,7 @@ h1 {
 }
 
 /* Hide floating button on desktop where details panel is visible */
-@media (min-width: 1100px) {
+@media (min-width: 1200px) {
   .floating-details-btn {
     display: none !important;
   }
@@ -935,7 +935,7 @@ h1 {
   display: block;
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1200px) {
   .day-switcher {
     display: none;
   }
@@ -1136,7 +1136,7 @@ h1 {
 }
 
 /* 1-Day View: Single column, full width */
-@media (max-width: 1099px) {
+@media (max-width: 1199px) {
   .calendar.view-1-day.day-switcher-active .calendar-header {
     grid-template-columns: 100px 1fr;
   }
@@ -1147,7 +1147,7 @@ h1 {
 }
 
 /* 3-Day View: Three columns */
-@media (max-width: 1099px) {
+@media (max-width: 1199px) {
   .calendar.view-3-day.day-switcher-active .calendar-header {
     grid-template-columns: 80px repeat(3, minmax(0, 1fr));
   }
@@ -1157,8 +1157,8 @@ h1 {
   }
 }
 
-/* 7-Day View: Available on tablet (768-1099px), not on true mobile (<768px) */
-@media (min-width: 768px) and (max-width: 1099px) {
+/* 7-Day View: Available on tablet (768-1199px), not on true mobile (<768px) */
+@media (min-width: 768px) and (max-width: 1199px) {
   .calendar.view-7-day.day-switcher-active {
     overflow-x: auto; /* Allow horizontal scroll if needed on smaller tablets */
   }
