@@ -806,3 +806,49 @@ The implementation is straightforward with clear state management and well-defin
 **Estimated Implementation Time:** 60 minutes  
 **Risk Level:** Low (isolated feature, doesn't modify core calendar logic)
 
+---
+
+### UI/UX Expert Review & Feedback
+**Review Date:** November 20, 2025
+
+I have reviewed the plan and it is excellent. The move to a day-switcher model is exactly the right solution for the mobile calendar legibility issue.
+
+**Feedback on specific questions:**
+1.  **Default View:** Default to **1-day view** on mobile (<768px). 3-day views on narrow phones often result in illegible event titles if they are long. Let the user opt-in to density.
+2.  **Tablet Visibility:** Yes, show the switcher on tablet (768-1099px). Tablets are often touch-first, and horizontal scrolling large grids is still painful. Giving them the *option* to focus is a win.
+3.  **Sticky Nav:** **Yes, absolutely.** If a user scrolls down to 6 PM, they need to know what day they are looking at without scrolling back up. This is critical for context.
+4.  **Storage:** `localStorage` is generally better for UI preferences so the site "remembers" me when I come back tomorrow. However, `sessionStorage` is safer if we worry about the schedule changing structure (e.g., if next week is a 5-day week). Stick with **sessionStorage** for now to avoid stale state bugs.
+5.  **Swipe Gestures:** **Strong yes for Phase 2.** Mobile users expect to swipe calendars. Arrows are good for discoverability/accessibility, but swipe is for power users.
+6.  **Edge Cases (Wrapping):** **Do NOT wrap.** This is a fixed 1-week schedule ("Week #1"). Wrapping to "Sat" after "Fri" implies a continuous calendar, which might confuse users into thinking it's next week's Saturday. Disable the "Next" button at the end of the week.
+
+**Additional Considerations:**
+-   **"Today" Button:** If the user navigates far away, a small "Jump to Today" (or "Jump to Start") text link might be helpful if they get lost, though for 7 days it's likely overkill.
+-   **Transition Polish:** When switching days, ensure the *scroll position* is maintained. If I am looking at 2 PM on Monday and switch to Tuesday, I should still be looking at roughly 2 PM (unless that time slot is empty/out of bounds), rather than jumping to 8 AM.
+-   **Header Sync:** Ensure the "Week #1" header doesn't conflict with the new day navigator. You might want to hide the "December 13-19" text in the main header on mobile since the day navigator provides that context more precisely.
+
+**Sign-off:**
+Approved for implementation. The plan is solid and addresses the core usability issues identified in my initial review.
+
+*— UI / UX Expert*
+
+---
+
+### Architect Commentary – November 24, 2025
+
+**Default mobile view:** The plan implicitly leaves room for either 1-day or 3-day defaults, while the UX expert mandates 1-day under 768 px. I agree with the expert—single-day columns are the only way to guarantee legibility on phones. Recommendation: hard-code `currentView = 1` for `<768 px` on first load, regardless of stored preference, and only honor the saved view after the user explicitly chooses another option during that session.
+
+**Switcher visibility breakpoint:** The spec waffles on whether the switcher appears on tablets, but the expert strongly advocates for it. We should render the switcher for all viewports <1100 px and simply lock the view to 7-day on desktop. That keeps tablet users from fighting horizontal scroll while retaining desktop parity.
+
+**Week boundary behavior:** The author hints at showing “whatever days remain,” whereas the expert cautions against wrapping into the next week. We should disable `Next` when `currentDayIndex + currentView ≥ totalDays`, show partial spans (e.g., Thu–Fri) when necessary, and never wrap to Saturday again. This preserves the “Week #1” mental model.
+
+**Sticky nav + scroll continuity:** Both parties endorse sticky navigation. Implementation needs to respect iOS safe areas (`env(safe-area-inset-bottom)`) and, per expert feedback, preserve vertical scroll position when switching views. Capture `calendarBody.scrollTop` before changing visibility and reapply afterward to avoid jarring jumps.
+
+**State persistence:** Session storage is the agreed approach, but add a guard that clamps stale values (e.g., if the stored view is `3` while only two days remain, fall back to `2` automatically). This prevents dead-end navigation when someone returns mid-week.
+
+**ARIA and accessibility:** When the visible range changes, announce only the updated date span via `aria-live="polite"` on the nav label rather than the entire switcher. Also add `aria-disabled="true"` and visual styling for inactive nav buttons so screen-reader users and sighted users receive consistent feedback.
+
+**Floating details CTA integration:** Changing views can hide the currently selected event; when that happens, call `resetActiveState()` so the details panel and floating button don’t reference an off-screen session.
+
+**Future swipe gestures:** Since the UX expert wants swipe navigation in Phase 2, structure the state handlers so gesture hooks can call `handleDayNavigation('prev'|'next')` without duplicating logic. Document this intention now to keep Implementation mindful of passive pointer listeners and `touch-action: pan-y`.
+
+With these clarifications logged, Implementation can make confident tradeoffs during build without re-litigating direction. After the switcher ships, revisit the hero header copy on sub-768 px widths to ensure it doesn’t conflict with the new sticky context.
