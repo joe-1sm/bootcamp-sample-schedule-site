@@ -687,13 +687,18 @@
         dayViewElements.calendar.classList.add('day-switcher-active');
       }
       
+      // True mobile: If currently in 7-day view, switch to 3-day (since 7-day button is hidden)
+      if (isTrueMobile && dayViewState.currentView === 7) {
+        dayViewState.currentView = 3;
+      }
+      
       // On first load without saved preference
       if (!sessionStorage.getItem('bootcamp-calendar-view')) {
-        // True mobile: default to 1-day, Tablet: keep 7-day
-        if (isTrueMobile && dayViewState.currentView === 7) {
+        // True mobile: default to 1-day
+        if (isTrueMobile && (dayViewState.currentView === 7 || dayViewState.currentView === 3)) {
           dayViewState.currentView = 1;
         }
-        // Tablet keeps 7-day view by default
+        // Tablet keeps current view (or 7-day by default)
       }
     }
   }
