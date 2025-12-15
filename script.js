@@ -1151,49 +1151,5 @@
 
   init();
 
-  // Embed Modal Logic - Only shows when page is in iframe
-  (function initEmbedModal() {
-    const isEmbedded = window.self !== window.top;
-    
-    console.log('Embed check:', isEmbedded ? 'IN IFRAME' : 'STANDALONE');
-    
-    if (!isEmbedded) {
-      console.log('Not in iframe - modal disabled');
-      return; // Exit if not in iframe
-    }
-    
-    console.log('In iframe - modal will show in 5 seconds');
-    
-    const modal = document.getElementById('embedModal');
-    const closeBtn = document.getElementById('modalClose');
-    
-    if (!modal || !closeBtn) {
-      console.error('Modal elements not found!');
-      return;
-    }
-    
-    // Show modal after 20 seconds
-    setTimeout(() => {
-      modal.setAttribute('aria-hidden', 'false');
-      console.log('Embed modal should now be visible');
-    }, 20000); // 20 seconds
-    
-    // Close modal when X button is clicked
-    closeBtn.addEventListener('click', () => {
-      modal.setAttribute('aria-hidden', 'true');
-    });
-    
-    // Close modal when clicking overlay
-    modal.querySelector('.embed-modal__overlay').addEventListener('click', () => {
-      modal.setAttribute('aria-hidden', 'true');
-    });
-    
-    // Close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
-        modal.setAttribute('aria-hidden', 'true');
-      }
-    });
-  })();
 })();
 
