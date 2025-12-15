@@ -357,6 +357,15 @@
     attachFloatingButtonHandler();
     initDaySwitcher(); // NEW: Initialize day switcher
     resetActiveState();
+    
+    // Hide "Learn More" button on embedded version
+    const isEmbedded = window.self !== window.top;
+    if (isEmbedded) {
+      const learnMoreBtn = document.getElementById('learnMoreBtn');
+      if (learnMoreBtn) {
+        learnMoreBtn.style.display = 'none';
+      }
+    }
   }
 
   function renderTimeAxis() {
