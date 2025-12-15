@@ -624,7 +624,7 @@ h1 {
   align-items: center;
   justify-content: center;
   padding: 10px 18px;
-  background: #2563eb;
+  background: #961a32;
   color: #fff;
   font-size: 0.85rem;
   font-weight: 600;
@@ -632,15 +632,15 @@ h1 {
   border-radius: 8px;
   white-space: nowrap;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 8px rgba(150, 26, 50, 0.3);
   flex-shrink: 0;
-  margin-top: 28px;
+  margin-top: 0;
 }
 
 .join-btn:hover {
-  background: #1d4ed8;
+  background: #7d1629;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 4px 12px rgba(150, 26, 50, 0.4);
 }
 
 .join-btn:active {
@@ -648,7 +648,7 @@ h1 {
 }
 
 .join-btn:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #961a32;
   outline-offset: 2px;
 }
 
@@ -664,7 +664,6 @@ h1 {
   }
   
   .join-btn {
-    margin-top: 0;
     width: 100%;
   }
 }
