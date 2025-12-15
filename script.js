@@ -63,7 +63,8 @@
       start: "10:00",
       end: "11:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nIn this CP section dissection session, we will work through new passages and questions that mirror the logic patterns from some of the most challenging problems you saw over the weekend. You’ll practice applying those same problem-solving strategies to fresh scenarios.\n\n<strong>FIRST-PRINCIPLES THINKING</strong>\nWe’ll revisit key concepts from the FLE review and introduce a few new ones, showing how they fit together. The focus is on thinking from first principles: using basic chemistry and physics ideas to break down complex, unfamiliar problems.\n\n<strong>QUANTITATIVE STRATEGY</strong>\nWe’ll also review CP-specific passage and question approaches that leverage quantitative reasoning to find efficient solutions without reading every word or relying on massive amounts of memorized content. The goal is fast, clear logic—not heroic amounts of brute-force reading."
+      zoomLink: "https://us02web.zoom.us/j/6502482728?pwd=OHJPV3A2bGZ5eE1EZGRFam50eEw2UT09",
+      description: "<strong>WHAT TO EXPECT</strong>\nIn this CP section dissection session, we will work through new passages and questions that mirror the logic patterns from some of the most challenging problems you saw over the weekend. You'll practice applying those same problem-solving strategies to fresh scenarios.\n\n<strong>FIRST-PRINCIPLES THINKING</strong>\nWe'll revisit key concepts from the FLE review and introduce a few new ones, showing how they fit together. The focus is on thinking from first principles: using basic chemistry and physics ideas to break down complex, unfamiliar problems.\n\n<strong>QUANTITATIVE STRATEGY</strong>\nWe'll also review CP-specific passage and question approaches that leverage quantitative reasoning to find efficient solutions without reading every word or relying on massive amounts of memorized content. The goal is fast, clear logic—not heroic amounts of brute-force reading."
     },
     {
       title: "CARS Section Dissection",
@@ -71,7 +72,8 @@
       start: "12:00",
       end: "13:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nThis CARS section disssection session is the CARS-focused counterpart to the CP session. We’ll tackle new passages and questions that echo the logic and difficulty of the most challenging CARS problems from your full-length exam.\n\n<strong>FATIGUE & FOCUS</strong>\nThere’s only a short break between CP and CARS, so you’ll be practicing CARS while already mentally tired from quantitative work. That’s intentional—test day feels like this. We’ll work on maintaining focus, pacing, and decision-making even when your brain is a bit fried.\n\n<strong>CARS REASONING PRACTICE</strong>\nWe’ll emphasize the same careful, step-by-step reasoning you used in your CARS review: tracking arguments, evaluating evidence, and eliminating choices using logic rather than vibes. The goal is to transfer those skills to new, unfamiliar passages under realistic test-day conditions."
+      zoomLink: "https://us02web.zoom.us/j/6437848684?pwd=ye6baEWy3YNkArZlyUaI7w8JS6mb9S.1",
+      description: "<strong>WHAT TO EXPECT</strong>\nThis CARS section disssection session is the CARS-focused counterpart to the CP session. We'll tackle new passages and questions that echo the logic and difficulty of the most challenging CARS problems from your full-length exam.\n\n<strong>FATIGUE & FOCUS</strong>\nThere's only a short break between CP and CARS, so you'll be practicing CARS while already mentally tired from quantitative work. That's intentional—test day feels like this. We'll work on maintaining focus, pacing, and decision-making even when your brain is a bit fried.\n\n<strong>CARS REASONING PRACTICE</strong>\nWe'll emphasize the same careful, step-by-step reasoning you used in your CARS review: tracking arguments, evaluating evidence, and eliminating choices using logic rather than vibes. The goal is to transfer those skills to new, unfamiliar passages under realistic test-day conditions."
     },
     {
       title: "BB Section Dissection",
@@ -79,7 +81,8 @@
       start: "16:00",
       end: "17:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nThis Bio/Biochem section dissection session takes place after a longer break in the afternoon, just like the real MCAT. We’ll work through some of the most challenging Bio/Biochem-style passages, with an extra focus on how you approach and dissect them.\n\n<strong>EXPERIMENTAL DESIGN & DATA</strong>\nWe’ll emphasize experimental design, the scientific method, and data interpretation as the backbone of Bio/Biochem passages. You’ll practice identifying hypotheses, controls, variables, and what the data actually support, so you can reason through complicated figures and setups with confidence.\n\n<strong>FIRST-PRINCIPLES BIOLOGY</strong>\nBecause many students are stronger in biology, the test often raises the difficulty by using novel, technical scenarios. We’ll lean on basic principles from chemistry and physics and fundamentals like the central dogma to build a first-principles understanding of complex, unfamiliar techniques, rather than trying to memorize every possible method in advance."
+      zoomLink: "https://us02web.zoom.us/j/7445139408?pwd=IBYqVYhX64VClBo2xFBgapaEJHu4ow.1",
+      description: "<strong>WHAT TO EXPECT</strong>\nThis Bio/Biochem section dissection session takes place after a longer break in the afternoon, just like the real MCAT. We'll work through some of the most challenging Bio/Biochem-style passages, with an extra focus on how you approach and dissect them.\n\n<strong>EXPERIMENTAL DESIGN & DATA</strong>\nWe'll emphasize experimental design, the scientific method, and data interpretation as the backbone of Bio/Biochem passages. You'll practice identifying hypotheses, controls, variables, and what the data actually support, so you can reason through complicated figures and setups with confidence.\n\n<strong>FIRST-PRINCIPLES BIOLOGY</strong>\nBecause many students are stronger in biology, the test often raises the difficulty by using novel, technical scenarios. We'll lean on basic principles from chemistry and physics and fundamentals like the central dogma to build a first-principles understanding of complex, unfamiliar techniques, rather than trying to memorize every possible method in advance."
     },
     {
       title: "PS Section Dissection",
@@ -87,7 +90,8 @@
       start: "18:00",
       end: "19:30",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nThis Psych/Soc section dissection session comes at the end of the day, after a short break from Bio/Biochem, mirroring how mentally tired you’ll feel on the real exam. We’ll work through new Psych/Soc-style passages and questions that resemble the difficulty and style of your full-length exam.\n\n<strong>DATA & LOGIC IN PS</strong>\nWe’ll focus on interpreting data from psychological and sociological studies, applying clear logical reasoning to understand what the results actually show (and what they don’t). You’ll practice connecting study designs, variables, and outcomes to core Psych/Soc concepts.\n\n<strong>INTEGRATING YOUR SKILLS</strong>\nPsych/Soc blends skills from CARS and Bio/Biochem: tracking stated logic, drawing sound conclusions, and evaluating the quality of experimental design. This session is about bringing those skills together so you can handle complex, research-based PS questions with confidence at the end of a long test day."
+      zoomLink: "https://us02web.zoom.us/j/6437848684?pwd=ye6baEWy3YNkArZlyUaI7w8JS6mb9S.1",
+      description: "<strong>WHAT TO EXPECT</strong>\nThis Psych/Soc section dissection session comes at the end of the day, after a short break from Bio/Biochem, mirroring how mentally tired you'll feel on the real exam. We'll work through new Psych/Soc-style passages and questions that resemble the difficulty and style of your full-length exam.\n\n<strong>DATA & LOGIC IN PS</strong>\nWe'll focus on interpreting data from psychological and sociological studies, applying clear logical reasoning to understand what the results actually show (and what they don't). You'll practice connecting study designs, variables, and outcomes to core Psych/Soc concepts.\n\n<strong>INTEGRATING YOUR SKILLS</strong>\nPsych/Soc blends skills from CARS and Bio/Biochem: tracking stated logic, drawing sound conclusions, and evaluating the quality of experimental design. This session is about bringing those skills together so you can handle complex, research-based PS questions with confidence at the end of a long test day."
     },
     {
       title: "1SM Long Form FLE Post-Mortem Assignment",
@@ -287,7 +291,8 @@
     timeEl: document.getElementById("detailsTime"),
     descriptionEl: document.getElementById("detailsDescription"),
     container: document.getElementById("eventDetails"),
-    card: document.querySelector(".details-card")
+    card: document.querySelector(".details-card"),
+    joinBtn: document.getElementById("joinBtn")
   };
 
   const floatingBtn = document.getElementById("floatingDetailsBtn");
@@ -478,6 +483,12 @@
     details.timeEl.style.display = "none"; // Force hide with inline style
     details.descriptionEl.textContent = defaultDetails.description;
     
+    // Hide join button
+    if (details.joinBtn) {
+      details.joinBtn.classList.add("is-hidden");
+      details.joinBtn.href = "#";
+    }
+    
     // Hide floating button when no event is selected
     hideFloatingButton();
   }
@@ -491,6 +502,17 @@
     details.timeEl.classList.remove("is-hidden");
     details.timeEl.style.display = "block"; // Force display with inline style
     details.descriptionEl.innerHTML = eventData.description;
+    
+    // Show/hide join button based on whether event has a Zoom link
+    if (details.joinBtn) {
+      if (eventData.zoomLink) {
+        details.joinBtn.href = eventData.zoomLink;
+        details.joinBtn.classList.remove("is-hidden");
+      } else {
+        details.joinBtn.classList.add("is-hidden");
+        details.joinBtn.href = "#";
+      }
+    }
     
     // Show floating button on mobile
     showFloatingButton();

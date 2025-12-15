@@ -607,6 +607,68 @@ h1 {
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
 }
 
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.details-header__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.join-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  flex-shrink: 0;
+  margin-top: 28px;
+}
+
+.join-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.join-btn:active {
+  transform: translateY(0);
+}
+
+.join-btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.join-btn.is-hidden {
+  display: none;
+}
+
+/* Mobile: Stack header vertically */
+@media (max-width: 480px) {
+  .details-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .join-btn {
+    margin-top: 0;
+    width: 100%;
+  }
+}
+
 .details-label {
   text-transform: uppercase;
   letter-spacing: 0.14em;

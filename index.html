@@ -197,9 +197,23 @@
 
       <aside class="event-details" id="eventDetails" aria-live="polite">
         <div class="details-card" tabindex="-1">
-          <p class="details-label">Selected session</p>
-          <h2 class="details-title" id="detailsTitle">Choose any event</h2>
-          <p class="details-time is-hidden" id="detailsTime"></p>
+          <div class="details-header">
+            <div class="details-header__text">
+              <p class="details-label">Selected session</p>
+              <h2 class="details-title" id="detailsTitle">Choose any event</h2>
+              <p class="details-time is-hidden" id="detailsTime"></p>
+            </div>
+            <a 
+              class="join-btn is-hidden" 
+              id="joinBtn"
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Click to join Zoom meeting"
+            >
+              Click to Join
+            </a>
+          </div>
           <p class="details-description" id="detailsDescription">
             Filters can hide or show live facilitation and homework sessions. Tap
             again to collapse the details.
