@@ -504,8 +504,10 @@
     details.descriptionEl.innerHTML = eventData.description;
     
     // Show/hide join button based on whether event has a Zoom link
+    // Only show on embedded version (inside iframe)
+    const isEmbedded = window.self !== window.top;
     if (details.joinBtn) {
-      if (eventData.zoomLink) {
+      if (eventData.zoomLink && isEmbedded) {
         details.joinBtn.href = eventData.zoomLink;
         details.joinBtn.classList.remove("is-hidden");
       } else {
