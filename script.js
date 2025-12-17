@@ -492,8 +492,12 @@
     const top = (minutesFromStart / 60) * calendarConfig.hourHeight;
     const height = (duration / 60) * calendarConfig.hourHeight;
     const id = `${event.day}-${event.start}`;
+    
+    // Z-index: later events stack on top (fixes back-to-back event visibility)
+    const zIndex = Math.floor(startMinutes / 10);
 
     element.className = `calendar-event calendar-event--${event.type}`;
+    element.style.zIndex = zIndex;
     element.dataset.type = event.type;
     element.dataset.eventId = id;
     element.tabIndex = 0;
