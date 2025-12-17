@@ -608,28 +608,30 @@ h1 {
 }
 
 .details-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  display: block;
+  position: relative;
 }
 
 .details-header__text {
   flex: 1;
   min-width: 0;
+  padding-right: 120px; /* Make room for button */
 }
 
 .join-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 18px;
+  padding: 8px 14px;
   background: #961a32;
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 6px;
   white-space: nowrap;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(150, 26, 50, 0.3);
@@ -659,12 +661,18 @@ h1 {
 /* Mobile: Stack header vertically */
 @media (max-width: 480px) {
   .details-header {
-    flex-direction: column;
-    gap: 12px;
+    display: block;
+  }
+  
+  .details-header__text {
+    padding-right: 0;
+    margin-bottom: 12px;
   }
   
   .join-btn {
+    position: static;
     width: 100%;
+    margin-top: 8px;
   }
 }
 
