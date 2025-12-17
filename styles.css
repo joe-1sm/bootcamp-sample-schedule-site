@@ -609,26 +609,19 @@ h1 {
 
 .details-header {
   display: block;
+  margin-bottom: 16px;
 }
 
-.details-header__text {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Position join button in top-right corner of the card */
+/* Join button - displayed below the time */
 .join-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 10;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 14px;
+  margin-top: 12px;
+  padding: 10px 20px;
   background: #961a32;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
   border-radius: 6px;
@@ -665,10 +658,7 @@ h1 {
   }
   
   .join-btn {
-    position: static;
     width: 100%;
-    margin-top: 12px;
-    margin-bottom: 8px;
   }
 }
 
