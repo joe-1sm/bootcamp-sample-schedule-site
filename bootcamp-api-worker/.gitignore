@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Local development secrets
+.dev.vars
+
+# Wrangler
+.wrangler/
+
+# OS files
+.DS_Store
+Thumbs.db
+

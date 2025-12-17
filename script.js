@@ -1,4 +1,13 @@
 (() => {
+  // ============================================
+  // API CONFIGURATION
+  // ============================================
+  const API_URL = 'https://bootcamp-calendar-api.onesm.workers.dev';
+  
+  // Get studentId from URL params (Softr injects this)
+  const urlParams = new URLSearchParams(window.location.search);
+  const studentId = urlParams.get('studentId');
+
   const calendarConfig = {
     startHour: 8,
     endHour: 22,
@@ -16,7 +25,11 @@
 
   const MIN_BLOCK_HEIGHT_FOR_TIME = 56;
 
-  const events = [
+  // Events array - will be populated from API or fallback data
+  let events = [];
+
+  // Fallback events (used if API fails)
+  const fallbackEvents = [
     {
       title: "Complete AAMC #1 under test-like conditions",
       day: "Saturday",
@@ -280,9 +293,62 @@
       start: "19:00",
       end: "20:00",
       type: "live",
-      description: "<strong>WHAT TO EXPECT</strong>\nYour final meeting of the week is a one-on-one check-in with a 1SM tutor. It’s scheduled for up to an hour (though it may be shorter) and is dedicated to reviewing your first week: what you’ve learned, what you’ve struggled with, and how you’re feeling about the pace and structure of the program.\n\n<strong>WHAT YOU’LL TALK ABOUT</strong>\nYou and your tutor will discuss your progress on assignments and exams, ways to adapt your study and testing strategies, and any questions you have about course mechanics or your personal situation. Your tutor may also ask you targeted questions to gauge your understanding of key content, your logic and reasoning process, and your approach to studying.\n\n<strong>HOW TO APPROACH IT</strong>\nCome prepared with questions, concerns, and honest reflections—this is your time. The more transparent you are, the better your tutor can help you refine your plan, choose supplementary resources, and avoid spinning your wheels on low-yield habits.\n\n<strong>WHY THIS MATTERS</strong>\nEvery student has this check-in in Week 1 to make sure they’re on track, staying accountable, and keeping up with the workload. Ongoing weekly check-ins are an optional add-on: we designed it this way to keep the program more financially accessible, while still giving students who want extra personalized support the chance to get it."
+      description: "<strong>WHAT TO EXPECT</strong>\nYour final meeting of the week is a one-on-one check-in with a 1SM tutor. It's scheduled for up to an hour (though it may be shorter) and is dedicated to reviewing your first week: what you've learned, what you've struggled with, and how you're feeling about the pace and structure of the program.\n\n<strong>WHAT YOU'LL TALK ABOUT</strong>\nYou and your tutor will discuss your progress on assignments and exams, ways to adapt your study and testing strategies, and any questions you have about course mechanics or your personal situation. Your tutor may also ask you targeted questions to gauge your understanding of key content, your logic and reasoning process, and your approach to studying.\n\n<strong>HOW TO APPROACH IT</strong>\nCome prepared with questions, concerns, and honest reflections—this is your time. The more transparent you are, the better your tutor can help you refine your plan, choose supplementary resources, and avoid spinning your wheels on low-yield habits.\n\n<strong>WHY THIS MATTERS</strong>\nEvery student has this check-in in Week 1 to make sure they're on track, staying accountable, and keeping up with the workload. Ongoing weekly check-ins are an optional add-on: we designed it this way to keep the program more financially accessible, while still giving students who want extra personalized support the chance to get it."
     }
   ];
+
+  // ============================================
+  // API FETCH FUNCTION
+  // ============================================
+  
+  /**
+   * Fetch events from the Cloudflare Worker API
+   * Falls back to hardcoded events if API fails
+   */
+  async function fetchEventsFromAPI() {
+    try {
+      const url = studentId 
+        ? `${API_URL}/?studentId=${studentId}`
+        : `${API_URL}/`;
+      
+      console.log('[Calendar] Fetching events from API...', { studentId });
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('[Calendar] Received events from API:', data.events?.length || 0);
+      
+      if (data.events && data.events.length > 0) {
+        // Transform API events to match frontend format
+        return data.events.map(event => ({
+          id: event.id,
+          title: event.title,
+          day: event.day,
+          start: event.start,
+          end: event.end,
+          type: event.type,
+          zoomLink: event.zoomLink || null,
+          description: event.description || '',
+          videoUrl: event.videoUrl || null,
+          // Additional data from Airtable
+          aamcPassages: event.aamcPassages || [],
+          aamcResources: event.aamcResources || [],
+          aamcQuestions: event.aamcQuestions || [],
+          oneSmPassages: event.oneSmPassages || [],
+          oneSmQuestions: event.oneSmQuestions || [],
+          oneSmResources: event.oneSmResources || []
+        }));
+      }
+      
+      throw new Error('No events returned from API');
+    } catch (error) {
+      console.warn('[Calendar] API fetch failed, using fallback data:', error.message);
+      return fallbackEvents;
+    }
+  }
 
   const timeAxisEl = document.getElementById("timeAxis");
   const dayColumns = Array.from(document.querySelectorAll(".day-column"));
@@ -351,16 +417,32 @@
    */
   const eventToDayIndex = {};
 
-  function init() {
+  async function init() {
     document.documentElement.style.setProperty(
       "--hour-height",
       `${calendarConfig.hourHeight}px`
     );
+    
+    // Show loading state
+    const calendarBody = document.querySelector('.calendar-body');
+    if (calendarBody) {
+      calendarBody.style.opacity = '0.5';
+    }
+    
+    // Fetch events from API (or use fallback)
+    events = await fetchEventsFromAPI();
+    console.log('[Calendar] Loaded', events.length, 'events');
+    
+    // Restore opacity
+    if (calendarBody) {
+      calendarBody.style.opacity = '1';
+    }
+    
     renderTimeAxis();
     renderEvents();
     attachFilterHandlers();
     attachFloatingButtonHandler();
-    initDaySwitcher(); // NEW: Initialize day switcher
+    initDaySwitcher(); // Initialize day switcher
     resetActiveState();
     
     // Hide "Learn More" button on embedded version
