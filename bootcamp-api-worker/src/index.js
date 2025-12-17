@@ -150,6 +150,31 @@ async function fetchAirtableEvents(env, studentId) {
 }
 
 /**
+ * Convert Airtable Markdown to HTML
+ * Handles: **bold**, *italic*, and newlines
+ */
+function markdownToHtml(text) {
+  if (!text) return '';
+  
+  return text
+    // Convert **bold** to <strong>
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Convert *italic* to <em>
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Convert double newlines to paragraph breaks
+    .replace(/\n\n/g, '</p><p>')
+    // Convert single newlines to <br>
+    .replace(/\n/g, '<br>')
+    // Wrap in paragraph tags if we added any
+    .replace(/^(.*)$/, (match) => {
+      if (match.includes('</p><p>')) {
+        return '<p>' + match + '</p>';
+      }
+      return match;
+    });
+}
+
+/**
  * Transform Airtable record to frontend-friendly format
  */
 function transformRecord(record) {
@@ -175,19 +200,21 @@ function transformRecord(record) {
   const endDateTime = fields['End Date / Time'];
   
   // Extract day of week and time from datetime
+  // Use America/New_York (EST/EDT) timezone for display
+  const timezone = 'America/New_York';
   let day = '';
   let start = '';
   let end = '';
   
   if (startDateTime) {
     const startDate = new Date(startDateTime);
-    day = startDate.toLocaleDateString('en-US', { weekday: 'long' });
-    start = startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    day = startDate.toLocaleDateString('en-US', { weekday: 'long', timeZone: timezone });
+    start = startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone });
   }
   
   if (endDateTime) {
     const endDate = new Date(endDateTime);
-    end = endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    end = endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone });
   }
 
   return {
@@ -200,7 +227,7 @@ function transformRecord(record) {
     endDateTime,
     type,
     zoomLink: zoomLink || null,
-    description: fields['Assignments & Review'] || '',
+    description: markdownToHtml(fields['Assignments & Review'] || ''),
     videoUrl: fields['Meeting Video'] || null,
     // Student assignment info (for filtering)
     studentAssignmentIds: fields['idN_student_assignment'] || [],

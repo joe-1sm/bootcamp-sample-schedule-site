@@ -1,9 +1,5 @@
 {
   "name": "bootcamp-calendar-api",
   "main": "src/index.js",
-  "compatibility_date": "2024-12-01",
-  "vars": {
-    "AIRTABLE_TOKEN": "",
-    "AIRTABLE_BASE_ID": ""
-  }
+  "compatibility_date": "2024-12-01"
 }
