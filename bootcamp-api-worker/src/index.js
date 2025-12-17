@@ -50,12 +50,12 @@ export default {
 
     try {
       const url = new URL(request.url);
-      const studentId = url.searchParams.get('studentId');
+      const studentEmail = url.searchParams.get('studentEmail');
 
       // Fetch all CC-1 records for wbc25 bootcamp
-      const events = await fetchAirtableEvents(env, studentId);
+      const events = await fetchAirtableEvents(env, studentEmail);
 
-      return new Response(JSON.stringify({ events, studentId }), {
+      return new Response(JSON.stringify({ events, studentEmail }), {
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export default {
 /**
  * Fetch events from Airtable CC-1 table
  */
-async function fetchAirtableEvents(env, studentId) {
+async function fetchAirtableEvents(env, studentEmail) {
   const baseId = env.AIRTABLE_BASE_ID;
   const token = env.AIRTABLE_TOKEN;
   
@@ -146,7 +146,7 @@ async function fetchAirtableEvents(env, studentId) {
   // Transform and filter records
   const events = allRecords
     .map(record => transformRecord(record))
-    .filter(event => filterEvent(event, studentId));
+    .filter(event => filterEvent(event, studentEmail));
 
   return events;
 }
@@ -248,28 +248,30 @@ function transformRecord(record) {
 /**
  * Filter events based on type and student assignment
  * - Live events: show all
- * - Homework events: only show if assigned to this student
+ * - Homework events: only show if assigned to this student (by email)
  */
-function filterEvent(event, studentId) {
+function filterEvent(event, studentEmail) {
   // Always show live events
   if (event.type === 'live') {
     return true;
   }
 
   // For homework/async assignments:
-  // If no studentId provided, don't show any assignments
-  if (!studentId) {
+  // If no studentEmail provided, don't show any assignments
+  if (!studentEmail) {
     return false;
   }
 
-  // Check if this student is assigned to this event
-  const studentIdNum = parseInt(studentId, 10);
-  const assignedIds = event.studentAssignmentIds;
+  // Check if this student's email is in the assigned emails
+  const assignedEmails = event.studentEmails || [];
+  const emailLower = studentEmail.toLowerCase();
 
-  if (Array.isArray(assignedIds)) {
-    return assignedIds.includes(studentIdNum) || assignedIds.includes(studentId);
+  if (Array.isArray(assignedEmails)) {
+    return assignedEmails.some(email => 
+      email && email.toLowerCase() === emailLower
+    );
   }
 
-  return assignedIds === studentIdNum || assignedIds === studentId;
+  return false;
 }
 

@@ -4,9 +4,9 @@
   // ============================================
   const API_URL = 'https://bootcamp-calendar-api.onesm.workers.dev';
   
-  // Get studentId from URL params (Softr injects this)
+  // Get studentEmail from URL params (Softr injects this)
   const urlParams = new URLSearchParams(window.location.search);
-  const studentId = urlParams.get('studentId');
+  const studentEmail = urlParams.get('studentEmail');
 
   const calendarConfig = {
     startHour: 8,
@@ -307,11 +307,11 @@
    */
   async function fetchEventsFromAPI() {
     try {
-      const url = studentId 
-        ? `${API_URL}/?studentId=${studentId}`
+      const url = studentEmail 
+        ? `${API_URL}/?studentEmail=${encodeURIComponent(studentEmail)}`
         : `${API_URL}/`;
       
-      console.log('[Calendar] Fetching events from API...', { studentId });
+      console.log('[Calendar] Fetching events from API...', { studentEmail });
       
       const response = await fetch(url);
       if (!response.ok) {
