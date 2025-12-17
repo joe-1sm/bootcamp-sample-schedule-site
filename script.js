@@ -175,6 +175,7 @@
       start: "14:00",
       end: "16:00",
       type: "live",
+      zoomLink: "https://us02web.zoom.us/j/6437848684?pwd=ye6baEWy3YNkArZlyUaI7w8JS6mb9S.1",
       description: "<strong>WHAT TO EXPECT</strong>\nWednesday afternoon is fully dedicated to CARS. In this first of four 1SM CARS Bootcamp Curriculum lectures, we’ll lay out core CARS passage strategy in a structured, step-by-step way.\n\n<strong>STRATEGY & APPLICATION</strong>\nWe’ll build directly on the skills and ideas from Monday’s CARS section dissection session, then demonstrate how to apply those strategies to specific passages and questions. You’ll see exactly how to read, annotate (when appropriate), and decision-make under realistic timing.\n\n<strong>PERSONALIZED GUIDANCE</strong>\nBeyond general strategy, we’ll give situation-based feedback and advice tailored to you: what you personally need to focus on, how to implement CARS practice day to day outside of class, and how to adjust your habits so your effort actually turns into score gains."
     },
     {
