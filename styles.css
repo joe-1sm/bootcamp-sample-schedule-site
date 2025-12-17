@@ -549,6 +549,7 @@ h1 {
 .calendar-event--homework {
   background: var(--brand-homework);
   color: #191919;
+  border: 1px solid #a0a0a0; /* Slightly darker gray border */
 }
 
 .calendar-event h3 {
