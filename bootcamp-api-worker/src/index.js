@@ -14,7 +14,9 @@ const ALLOWED_ORIGINS = [
   'https://www.mcat.live',
   'http://localhost:8000',  // For local development
   'http://localhost:8080',
+  'http://localhost:8888',
   'http://127.0.0.1:8000',
+  'http://127.0.0.1:8888',
 ];
 
 function getCorsHeaders(request) {
