@@ -331,6 +331,7 @@
           end: event.end,
           type: event.type,
           zoomLink: event.zoomLink || null,
+          assignmentLink: event.assignmentLink || null,  // For homework "Get Started" button
           description: event.description || '',
           videoUrl: event.videoUrl || null,
           // Additional data from Airtable
