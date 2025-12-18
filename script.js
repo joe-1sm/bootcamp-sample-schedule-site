@@ -606,6 +606,12 @@
     // Show/hide action button based on event type and links
     // Only show on embedded version (inside iframe)
     const isEmbedded = window.self !== window.top;
+    console.log('[Calendar] updateDetails button check:', { 
+      isEmbedded, 
+      zoomLink: eventData.zoomLink, 
+      assignmentLink: eventData.assignmentLink,
+      title: eventData.title
+    });
     if (details.joinBtn) {
       if (eventData.zoomLink && isEmbedded) {
         // Live event with Zoom link
