@@ -92,6 +92,7 @@ async function fetchAirtableEvents(env, studentEmail) {
     'Meeting Video',
     'LIVE',
     'assignment_student_email',  // Lookup field with student email
+    'assignment_link',  // URL field for assignment/homework link
     'bootcamp_course',
     // Linked record fields for resources (if they exist in CC-1)
     // 'aamc_passages',
@@ -231,6 +232,7 @@ function transformRecord(record) {
     zoomLink: zoomLink || null,
     description: markdownToHtml(fields['Assignments & Review'] || ''),
     videoUrl: fields['Meeting Video'] || null,
+    assignmentLink: fields['assignment_link'] || null,  // URL for homework "Get Started" button
     // Student assignment info (for filtering)
     studentEmails: fields['assignment_student_email'] || [],
     // AAMC resources

@@ -603,12 +603,19 @@
     details.timeEl.style.display = "block"; // Force display with inline style
     details.descriptionEl.innerHTML = eventData.description;
     
-    // Show/hide join button based on whether event has a Zoom link
+    // Show/hide action button based on event type and links
     // Only show on embedded version (inside iframe)
     const isEmbedded = window.self !== window.top;
     if (details.joinBtn) {
       if (eventData.zoomLink && isEmbedded) {
+        // Live event with Zoom link
         details.joinBtn.href = eventData.zoomLink;
+        details.joinBtn.textContent = "Click to Join";
+        details.joinBtn.classList.remove("is-hidden");
+      } else if (eventData.assignmentLink && isEmbedded) {
+        // Homework event with assignment link
+        details.joinBtn.href = eventData.assignmentLink;
+        details.joinBtn.textContent = "Get Started";
         details.joinBtn.classList.remove("is-hidden");
       } else {
         details.joinBtn.classList.add("is-hidden");
