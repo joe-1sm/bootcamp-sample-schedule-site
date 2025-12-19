@@ -1230,17 +1230,20 @@ h1 {
 .video-modal__body {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
   background: #000;
+  /* Let the embed's own responsive wrapper handle aspect ratio */
 }
 
-.video-modal__body iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Direct iframe (if embed doesn't include wrapper) */
+.video-modal__body > iframe {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 16 / 9;
   border: none;
+}
+
+/* Airtable embed wrapper already has padding-bottom for aspect ratio */
+.video-modal__body > div {
+  width: 100%;
 }
 
 /* Mobile adjustments */
