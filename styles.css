@@ -1231,19 +1231,37 @@ h1 {
   position: relative;
   width: 100%;
   background: #000;
-  /* Let the embed's own responsive wrapper handle aspect ratio */
+  /* Force aspect ratio container to work */
+  display: block;
+  line-height: 0; /* Remove any line-height spacing */
+  font-size: 0; /* Remove any font-based spacing */
 }
 
-/* Direct iframe (if embed doesn't include wrapper) */
+/* Airtable responsive embed wrapper */
+.video-modal__body > div {
+  position: relative !important;
+  width: 100% !important;
+  height: 0 !important;
+  padding-bottom: 56.25% !important;
+  overflow: hidden !important;
+}
+
+/* Iframe inside embed wrapper */
+.video-modal__body > div > iframe,
+.video-modal__body > div > img {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+}
+
+/* Direct iframe fallback (if no wrapper) */
 .video-modal__body > iframe {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: none;
-}
-
-/* Airtable embed wrapper already has padding-bottom for aspect ratio */
-.video-modal__body > div {
-  width: 100%;
 }
 
 /* Mobile adjustments */
