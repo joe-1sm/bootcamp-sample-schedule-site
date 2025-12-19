@@ -1167,17 +1167,15 @@ h1 {
 
 .video-modal__content {
   position: relative;
-  width: 100%;
-  max-width: calc(100vw - 32px); /* Nearly full width */
-  max-height: calc(100vh - 32px); /* Nearly full height */
+  width: auto;
+  max-width: calc(100vw - 64px);
+  max-height: calc(100vh - 64px);
   background: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
   transform: scale(0.95) translateY(20px);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
 }
 
 .video-modal[aria-hidden="false"] .video-modal__content {
@@ -1232,22 +1230,18 @@ h1 {
 
 .video-modal__body {
   position: relative;
-  width: 100%;
-  flex: 1; /* Fill remaining space */
-  min-height: 0; /* Allow shrinking */
   background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   line-height: 0;
   font-size: 0;
+  /* Size based on viewport, constrained by height on wide screens */
+  width: min(calc(100vw - 64px), calc((100vh - 120px) * 16 / 9));
+  height: auto;
 }
 
 /* Airtable responsive embed wrapper - use modern aspect-ratio */
 .video-modal__body > div {
   position: relative !important;
   width: 100% !important;
-  max-width: 100% !important;
   height: auto !important; /* Override inline height:0 */
   padding-bottom: 0 !important; /* Override inline padding-bottom */
   aspect-ratio: 16 / 9 !important;
