@@ -1231,22 +1231,22 @@ h1 {
   position: relative;
   width: 100%;
   background: #000;
-  /* Force aspect ratio container to work */
   display: block;
-  line-height: 0; /* Remove any line-height spacing */
-  font-size: 0; /* Remove any font-based spacing */
+  line-height: 0;
+  font-size: 0;
 }
 
-/* Airtable responsive embed wrapper */
+/* Airtable responsive embed wrapper - use modern aspect-ratio */
 .video-modal__body > div {
   position: relative !important;
   width: 100% !important;
-  height: 0 !important;
-  padding-bottom: 56.25% !important;
+  height: auto !important; /* Override inline height:0 */
+  padding-bottom: 0 !important; /* Override inline padding-bottom */
+  aspect-ratio: 16 / 9 !important;
   overflow: hidden !important;
 }
 
-/* Iframe inside embed wrapper */
+/* Iframe and thumbnail inside embed wrapper */
 .video-modal__body > div > iframe,
 .video-modal__body > div > img {
   position: absolute !important;
@@ -1255,6 +1255,7 @@ h1 {
   width: 100% !important;
   height: 100% !important;
   border: 0 !important;
+  object-fit: cover;
 }
 
 /* Direct iframe fallback (if no wrapper) */
