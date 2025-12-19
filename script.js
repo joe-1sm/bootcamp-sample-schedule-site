@@ -329,11 +329,13 @@
           day: event.day,
           start: event.start,
           end: event.end,
+          endDateTime: event.endDateTime || null,  // ISO datetime for checking if event has ended
           type: event.type,
           zoomLink: event.zoomLink || null,
           assignmentLink: event.assignmentLink || null,  // For homework "Get Started" button
           description: event.description || '',
           videoUrl: event.videoUrl || null,
+          videoEmbedCode: event.videoEmbedCode || null,  // YouTube embed iframe HTML
           // Additional data from Airtable
           aamcPassages: event.aamcPassages || [],
           aamcResources: event.aamcResources || [],
@@ -444,6 +446,7 @@
     attachFilterHandlers();
     attachFloatingButtonHandler();
     initDaySwitcher(); // Initialize day switcher
+    initVideoModal(); // Initialize video replay modal
     resetActiveState();
     
     // Hide "Learn More" button on embedded version
@@ -607,15 +610,38 @@
     // Show/hide action button based on event type and links
     // Only show on embedded version (inside iframe)
     const isEmbedded = window.self !== window.top;
+    
+    // Check if event has ended (for video replay)
+    const now = new Date();
+    const eventEnded = eventData.endDateTime && new Date(eventData.endDateTime) < now;
+    const hasVideoReplay = eventEnded && eventData.videoEmbedCode;
+    
     console.log('[Calendar] updateDetails button check:', { 
       isEmbedded, 
       zoomLink: eventData.zoomLink, 
       assignmentLink: eventData.assignmentLink,
+      videoEmbedCode: !!eventData.videoEmbedCode,
+      eventEnded,
+      hasVideoReplay,
       title: eventData.title
     });
+    
     if (details.joinBtn) {
-      if (eventData.zoomLink && isEmbedded) {
-        // Live event with Zoom link
+      // Remove any previous video click handler
+      details.joinBtn.onclick = null;
+      
+      if (hasVideoReplay && isEmbedded) {
+        // Event has ended and has video replay available
+        details.joinBtn.href = "#";
+        details.joinBtn.textContent = "Watch Recording";
+        details.joinBtn.classList.remove("is-hidden");
+        // Store video embed code for modal
+        details.joinBtn.onclick = (e) => {
+          e.preventDefault();
+          openVideoModal(eventData.title, eventData.videoEmbedCode);
+        };
+      } else if (eventData.zoomLink && isEmbedded) {
+        // Live event with Zoom link (not yet ended)
         details.joinBtn.href = eventData.zoomLink;
         details.joinBtn.textContent = "Click to Join";
         details.joinBtn.classList.remove("is-hidden");
@@ -756,6 +782,85 @@
       // Uncomment if you want the button to disappear after use:
       // setTimeout(hideFloatingButton, 600);
     });
+  }
+
+  // ============================================
+  // VIDEO MODAL FUNCTIONALITY
+  // ============================================
+  
+  const videoModal = {
+    modal: null,
+    backdrop: null,
+    closeBtn: null,
+    title: null,
+    body: null
+  };
+
+  function initVideoModal() {
+    videoModal.modal = document.getElementById('videoModal');
+    videoModal.backdrop = document.getElementById('videoModalBackdrop');
+    videoModal.closeBtn = document.getElementById('videoModalClose');
+    videoModal.title = document.getElementById('videoModalTitle');
+    videoModal.body = document.getElementById('videoModalBody');
+    
+    if (!videoModal.modal) return;
+    
+    // Close on backdrop click
+    videoModal.backdrop?.addEventListener('click', closeVideoModal);
+    
+    // Close on button click
+    videoModal.closeBtn?.addEventListener('click', closeVideoModal);
+    
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && videoModal.modal?.getAttribute('aria-hidden') === 'false') {
+        closeVideoModal();
+      }
+    });
+  }
+
+  function openVideoModal(title, embedCode) {
+    if (!videoModal.modal || !videoModal.body) return;
+    
+    console.log('[Calendar] Opening video modal:', { title, hasEmbedCode: !!embedCode });
+    
+    // Set title
+    if (videoModal.title) {
+      videoModal.title.textContent = title || 'Session Recording';
+    }
+    
+    // Inject embed code
+    videoModal.body.innerHTML = embedCode || '<p style="color: #999; text-align: center; padding: 40px;">Video not available</p>';
+    
+    // Show modal
+    videoModal.modal.setAttribute('aria-hidden', 'false');
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Focus close button for accessibility
+    setTimeout(() => {
+      videoModal.closeBtn?.focus();
+    }, 100);
+  }
+
+  function closeVideoModal() {
+    if (!videoModal.modal) return;
+    
+    console.log('[Calendar] Closing video modal');
+    
+    // Hide modal
+    videoModal.modal.setAttribute('aria-hidden', 'true');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    
+    // Clear video content (stops playback)
+    setTimeout(() => {
+      if (videoModal.body) {
+        videoModal.body.innerHTML = '';
+      }
+    }, 300); // Wait for transition
   }
 
   // ============================================

@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=6.6" />
+    <link rel="stylesheet" href="styles.css?v=7.0" />
     <script>
       // Only run iframe code if actually inside an iframe
       if (window.self !== window.top) {
@@ -245,10 +245,29 @@
       </button>
     </main>
 
+    <!-- Video Replay Modal -->
+    <div class="video-modal" id="videoModal" aria-hidden="true" role="dialog" aria-labelledby="videoModalTitle">
+      <div class="video-modal__backdrop" id="videoModalBackdrop"></div>
+      <div class="video-modal__content">
+        <div class="video-modal__header">
+          <h3 class="video-modal__title" id="videoModalTitle">Session Recording</h3>
+          <button class="video-modal__close" id="videoModalClose" aria-label="Close video modal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="video-modal__body" id="videoModalBody">
+          <!-- Video embed will be injected here -->
+        </div>
+      </div>
+    </div>
+
     <footer class="site-footer">
       <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
     </footer>
 
-    <script src="script.js?v=6.9"></script>
+    <script src="script.js?v=7.0"></script>
   </body>
 </html>

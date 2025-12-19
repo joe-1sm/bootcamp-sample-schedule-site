@@ -90,6 +90,7 @@ async function fetchAirtableEvents(env, studentEmail) {
     'Zoom Link (Tutor Personal Zoom Room) (from Instructor (linked))',
     'Assignments & Review',
     'Meeting Video',
+    'Video Embed Code',  // Formula field with YouTube embed code
     'LIVE',
     'assignment_student_email',  // Lookup field with student email
     'assignment_link',  // URL field for assignment/homework link
@@ -154,22 +155,32 @@ async function fetchAirtableEvents(env, studentEmail) {
 
 /**
  * Convert Airtable Markdown to HTML
- * Handles: **bold**, *italic*, and newlines
+ * Handles: **bold**, *italic*, _italic_, __bold__, and newlines
  */
 function markdownToHtml(text) {
   if (!text) return '';
   
   return text
-    // Convert **bold** to <strong>
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Convert **bold** to <strong> (must come before single *)
+    .replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>')
+    // Convert __bold__ to <strong> (must come before single _)
+    .replace(/__(.+?)__/gs, '<strong>$1</strong>')
     // Convert *italic* to <em>
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
+    // Convert _italic_ to <em> (but not inside words like some_variable)
+    .replace(/(?<![a-zA-Z0-9])_([^_]+?)_(?![a-zA-Z0-9])/g, '<em>$1</em>')
+    // Convert [link text](url) to <a>
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    // Convert bullet lists (- item)
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    // Wrap consecutive <li> elements in <ul>
+    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
     // Convert double newlines to paragraph breaks
     .replace(/\n\n/g, '</p><p>')
     // Convert single newlines to <br>
     .replace(/\n/g, '<br>')
-    // Wrap in paragraph tags if we added any
-    .replace(/^(.*)$/, (match) => {
+    // Wrap in paragraph tags if content has paragraph breaks
+    .replace(/^(.*)$/s, (match) => {
       if (match.includes('</p><p>')) {
         return '<p>' + match + '</p>';
       }
@@ -232,6 +243,7 @@ function transformRecord(record) {
     zoomLink: zoomLink || null,
     description: markdownToHtml(fields['Assignments & Review'] || ''),
     videoUrl: fields['Meeting Video'] || null,
+    videoEmbedCode: fields['Video Embed Code'] || null,  // YouTube embed iframe HTML
     assignmentLink: fields['assignment_link'] || null,  // URL for homework "Get Started" button
     // Student assignment info (for filtering)
     studentEmails: fields['assignment_student_email'] || [],
