@@ -1168,7 +1168,7 @@ h1 {
 .video-modal__content {
   position: relative;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px; /* Larger modal */
   background: #1a1a1a;
   border-radius: 16px;
   overflow: hidden;
@@ -1246,16 +1246,20 @@ h1 {
   overflow: hidden !important;
 }
 
-/* Iframe and thumbnail inside embed wrapper */
-.video-modal__body > div > iframe,
-.video-modal__body > div > img {
+/* Iframe inside embed wrapper */
+.video-modal__body > div > iframe {
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
   border: 0 !important;
-  object-fit: cover;
+}
+
+/* Hide the thumbnail image - onclick handlers don't work via innerHTML,
+   so the img blocks iframe interaction. Hide it to allow fullscreen etc. */
+.video-modal__body > div > img {
+  display: none !important;
 }
 
 /* Direct iframe fallback (if no wrapper) */
