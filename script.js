@@ -832,6 +832,13 @@
     // Inject embed code
     videoModal.body.innerHTML = embedCode || '<p style="color: #999; text-align: center; padding: 40px;">Video not available</p>';
     
+    // Add fullscreen permission to iframe (Airtable embed only has old allowfullscreen)
+    const iframe = videoModal.body.querySelector('iframe');
+    if (iframe) {
+      iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen');
+      iframe.setAttribute('allowfullscreen', 'true');
+    }
+    
     // Show modal
     videoModal.modal.setAttribute('aria-hidden', 'false');
     
