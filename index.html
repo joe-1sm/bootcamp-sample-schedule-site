@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=7.8" />
+    <link rel="stylesheet" href="styles.css?v=8.0" />
     <script>
       // Only run iframe code if actually inside an iframe
       if (window.self !== window.top) {
@@ -40,11 +40,31 @@
         <div class="header-top">
           <div class="header-top__text">
             <p class="eyebrow">1SM Winter Break MCAT Bootcamp</p>
-            <h1>
-              <span class="week-label">Week #1</span>
-              <span aria-hidden="true">·</span>
-              <span class="hide-on-mobile">December 13 – 19, 2025</span>
-            </h1>
+            <div class="week-nav-header">
+              <button 
+                class="week-nav-btn week-nav-btn--prev" 
+                id="weekNavPrev"
+                aria-label="Previous week"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <h1>
+                <span class="week-label">Week #1</span>
+                <span aria-hidden="true" class="hide-on-mobile">·</span>
+                <span class="header-date-range hide-on-mobile">December 13 – 19, 2025</span>
+              </h1>
+              <button 
+                class="week-nav-btn week-nav-btn--next" 
+                id="weekNavNext"
+                aria-label="Next week"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
         <div class="event-filters" aria-label="Event filters">
@@ -268,6 +288,6 @@
       <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
     </footer>
 
-    <script src="script.js?v=7.5"></script>
+    <script src="script.js?v=8.0"></script>
   </body>
 </html>

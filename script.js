@@ -8,19 +8,45 @@
   const urlParams = new URLSearchParams(window.location.search);
   const studentEmail = urlParams.get('studentEmail');
 
+  // ============================================
+  // WEEK DEFINITIONS (9 weeks: Dec 13, 2025 - Feb 13, 2026)
+  // ============================================
+  const bootcampWeeks = [
+    { week: 1, start: "2025-12-13", end: "2025-12-19", label: "December 13 – 19, 2025" },
+    { week: 2, start: "2025-12-20", end: "2025-12-26", label: "December 20 – 26, 2025" },
+    { week: 3, start: "2025-12-27", end: "2026-01-02", label: "Dec 27, 2025 – Jan 2, 2026" },
+    { week: 4, start: "2026-01-03", end: "2026-01-09", label: "January 3 – 9, 2026" },
+    { week: 5, start: "2026-01-10", end: "2026-01-16", label: "January 10 – 16, 2026" },
+    { week: 6, start: "2026-01-17", end: "2026-01-23", label: "January 17 – 23, 2026" },
+    { week: 7, start: "2026-01-24", end: "2026-01-30", label: "January 24 – 30, 2026" },
+    { week: 8, start: "2026-01-31", end: "2026-02-06", label: "Jan 31 – Feb 6, 2026" },
+    { week: 9, start: "2026-02-07", end: "2026-02-13", label: "February 7 – 13, 2026" },
+  ];
+
+  // Current week state (0-indexed)
+  let currentWeekIndex = 0;
+
+  // Generate days array for a given week
+  function getDaysForWeek(weekIndex) {
+    const week = bootcampWeeks[weekIndex];
+    const startDate = new Date(week.start + 'T00:00:00');
+    const dayNames = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    
+    return dayNames.map((name, i) => {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      const iso = date.toISOString().split('T')[0];
+      return { name, iso };
+    });
+  }
+
   const calendarConfig = {
     startHour: 8,
     endHour: 22,
     hourHeight: 60,
-    days: [
-      { name: "Saturday", iso: "2025-12-13" },
-      { name: "Sunday", iso: "2025-12-14" },
-      { name: "Monday", iso: "2025-12-15" },
-      { name: "Tuesday", iso: "2025-12-16" },
-      { name: "Wednesday", iso: "2025-12-17" },
-      { name: "Thursday", iso: "2025-12-18" },
-      { name: "Friday", iso: "2025-12-19" }
-    ]
+    get days() {
+      return getDaysForWeek(currentWeekIndex);
+    }
   };
 
   const MIN_BLOCK_HEIGHT_FOR_TIME = 56;
@@ -447,6 +473,7 @@
     attachFloatingButtonHandler();
     initDaySwitcher(); // Initialize day switcher
     initVideoModal(); // Initialize video replay modal
+    initWeekNavigation(); // Initialize week navigation
     resetActiveState();
     
     // Hide "Learn More" button on embedded version
@@ -472,8 +499,32 @@
   }
 
   function renderEvents() {
-    events.forEach((event) => {
-      const columnIdx = dayIndexMap[event.day];
+    // Get current week's date range
+    const currentWeek = bootcampWeeks[currentWeekIndex];
+    const weekStart = new Date(currentWeek.start + 'T00:00:00');
+    const weekEnd = new Date(currentWeek.end + 'T23:59:59');
+    
+    // Filter events for current week
+    const weekEvents = events.filter(event => {
+      if (!event.startDateTime) {
+        // Fallback events use day name - match by day
+        return true;
+      }
+      const eventDate = new Date(event.startDateTime);
+      return eventDate >= weekStart && eventDate <= weekEnd;
+    });
+    
+    console.log('[Calendar] Rendering', weekEvents.length, 'events for week', currentWeekIndex + 1);
+    
+    // Rebuild dayIndexMap for current week
+    const currentDays = calendarConfig.days;
+    const currentDayIndexMap = currentDays.reduce((map, day, index) => {
+      map[day.name] = index;
+      return map;
+    }, {});
+    
+    weekEvents.forEach((event) => {
+      const columnIdx = currentDayIndexMap[event.day];
       const column = dayColumns[columnIdx];
       if (!column) return;
 
@@ -485,6 +536,122 @@
       const id = `${event.day}-${event.start}`;
       eventToDayIndex[id] = columnIdx;
     });
+  }
+  
+  // Clear and re-render events for current week
+  function rerenderEventsForWeek() {
+    // Clear existing events
+    renderedEvents.forEach(({ element }) => element.remove());
+    renderedEvents.length = 0;
+    Object.keys(eventToDayIndex).forEach(key => delete eventToDayIndex[key]);
+    
+    // Reset active state
+    resetActiveState();
+    
+    // Render events for new week
+    renderEvents();
+    
+    // Update day labels in header
+    updateDayLabels();
+    
+    // Update header text
+    updateWeekHeader();
+    
+    // Re-apply filters
+    const liveFilter = document.querySelector('input[data-filter="live"]');
+    const homeworkFilter = document.querySelector('input[data-filter="homework"]');
+    if (liveFilter && homeworkFilter) {
+      updateFilterState({
+        live: liveFilter.checked,
+        homework: homeworkFilter.checked
+      });
+    }
+  }
+  
+  // Update day column headers with current week's dates
+  function updateDayLabels() {
+    const currentDays = calendarConfig.days;
+    const dayLabelEls = document.querySelectorAll('.calendar-header > .day-label');
+    
+    dayLabelEls.forEach((label, index) => {
+      if (currentDays[index]) {
+        const dateSpan = label.querySelector('span:last-child');
+        if (dateSpan) {
+          const [year, month, day] = currentDays[index].iso.split('-');
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          dateSpan.textContent = `${monthNames[parseInt(month) - 1]} ${parseInt(day)}`;
+        }
+      }
+    });
+  }
+  
+  // Update header with current week info
+  function updateWeekHeader() {
+    const currentWeek = bootcampWeeks[currentWeekIndex];
+    
+    // Update week label
+    const weekLabel = document.querySelector('.week-label');
+    if (weekLabel) {
+      weekLabel.textContent = `Week #${currentWeek.week}`;
+    }
+    
+    // Update date range
+    const dateRange = document.querySelector('.header-date-range');
+    if (dateRange) {
+      dateRange.textContent = currentWeek.label;
+    }
+    
+    // Update nav buttons state
+    updateWeekNavButtons();
+  }
+  
+  // Enable/disable week nav buttons at boundaries
+  function updateWeekNavButtons() {
+    const prevBtn = document.getElementById('weekNavPrev');
+    const nextBtn = document.getElementById('weekNavNext');
+    
+    if (prevBtn) {
+      prevBtn.disabled = currentWeekIndex === 0;
+      prevBtn.setAttribute('aria-disabled', currentWeekIndex === 0 ? 'true' : 'false');
+    }
+    
+    if (nextBtn) {
+      nextBtn.disabled = currentWeekIndex === bootcampWeeks.length - 1;
+      nextBtn.setAttribute('aria-disabled', currentWeekIndex === bootcampWeeks.length - 1 ? 'true' : 'false');
+    }
+  }
+  
+  // Navigate to previous week
+  function goToPreviousWeek() {
+    if (currentWeekIndex > 0) {
+      currentWeekIndex--;
+      rerenderEventsForWeek();
+    }
+  }
+  
+  // Navigate to next week
+  function goToNextWeek() {
+    if (currentWeekIndex < bootcampWeeks.length - 1) {
+      currentWeekIndex++;
+      rerenderEventsForWeek();
+    }
+  }
+  
+  // Initialize week navigation
+  function initWeekNavigation() {
+    const prevBtn = document.getElementById('weekNavPrev');
+    const nextBtn = document.getElementById('weekNavNext');
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', goToPreviousWeek);
+    }
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', goToNextWeek);
+    }
+    
+    // Set initial state
+    updateWeekHeader();
   }
 
   function createEventElement(event) {

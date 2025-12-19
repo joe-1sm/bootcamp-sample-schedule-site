@@ -174,6 +174,71 @@ img {
   font-size: 1rem;
 }
 
+/* Week Navigation Header */
+.week-nav-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.week-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--brand-live);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--brand-live);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.week-nav-btn:hover:not(:disabled) {
+  background: var(--brand-live);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.week-nav-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.week-nav-btn:disabled,
+.week-nav-btn[aria-disabled="true"] {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--muted);
+  color: var(--muted);
+}
+
+.week-nav-btn:focus-visible {
+  outline: 2px solid var(--brand-live);
+  outline-offset: 2px;
+}
+
+.week-nav-header h1 {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .week-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .week-nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .week-nav-header {
+    gap: 8px;
+  }
+}
+
 h1 {
   margin: 0 0 12px;
   font-size: clamp(1.8rem, 4vw, 2.0rem);
