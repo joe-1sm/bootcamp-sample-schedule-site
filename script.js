@@ -355,6 +355,7 @@
           day: event.day,
           start: event.start,
           end: event.end,
+          startDateTime: event.startDateTime || null,  // ISO datetime for week filtering
           endDateTime: event.endDateTime || null,  // ISO datetime for checking if event has ended
           type: event.type,
           zoomLink: event.zoomLink || null,
