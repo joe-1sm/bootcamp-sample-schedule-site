@@ -477,6 +477,10 @@
     initWeekNavigation(); // Initialize week navigation
     resetActiveState();
     
+    // Update day labels and header for the initial week (important if starting on Week 2+)
+    updateDayLabels();
+    updateWeekHeader();
+    
     // Hide "Learn More" button on embedded version
     const isEmbedded = window.self !== window.top;
     if (isEmbedded) {
