@@ -23,8 +23,8 @@
     { week: 9, start: "2026-02-07", end: "2026-02-13", label: "February 7 – 13, 2026" },
   ];
 
-  // Current week state (0-indexed)
-  let currentWeekIndex = 0;
+  // Current week state (0-indexed, starts at Week 2 since bootcamp began Dec 13)
+  let currentWeekIndex = 1;
 
   // Generate days array for a given week
   function getDaysForWeek(weekIndex) {
