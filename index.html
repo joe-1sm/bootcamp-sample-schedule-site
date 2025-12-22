@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=8.0" />
+    <link rel="stylesheet" href="styles.css?v=9.0" />
     <script>
       // Only run iframe code if actually inside an iframe
       if (window.self !== window.top) {
@@ -216,7 +216,30 @@
       </section>
 
       <aside class="event-details" id="eventDetails" aria-live="polite">
-        <div class="details-card" tabindex="-1">
+        <!-- Tab Toggle -->
+        <div class="panel-tabs" role="tablist" aria-label="View selection">
+          <button 
+            class="panel-tab panel-tab--active" 
+            id="tabSession"
+            role="tab"
+            aria-selected="true"
+            aria-controls="panelSession"
+          >
+            Selected Session
+          </button>
+          <button 
+            class="panel-tab" 
+            id="tabBank"
+            role="tab"
+            aria-selected="false"
+            aria-controls="panelBank"
+          >
+            Assignment Bank
+          </button>
+        </div>
+
+        <!-- Session Details Panel -->
+        <div class="details-card" id="panelSession" role="tabpanel" aria-labelledby="tabSession" tabindex="-1">
           <div class="details-header">
             <p class="details-label">Selected session</p>
             <h2 class="details-title" id="detailsTitle">Choose any event</h2>
@@ -249,6 +272,33 @@
             </svg>
             <span class="details-cta__text">Learn more</span>
           </a>
+        </div>
+
+        <!-- Assignment Bank Panel -->
+        <div class="bank-panel is-hidden" id="panelBank" role="tabpanel" aria-labelledby="tabBank" tabindex="-1">
+          <div class="bank-header">
+            <p class="bank-label">Assignment Bank</p>
+            <p class="bank-subtitle">Browse and add assignments to your calendar</p>
+          </div>
+          
+          <!-- Loading State -->
+          <div class="bank-loading" id="bankLoading">
+            <div class="bank-spinner"></div>
+            <span>Loading assignments...</span>
+          </div>
+          
+          <!-- Assignment List -->
+          <div class="bank-list" id="bankList">
+            <!-- Assignments will be rendered here by JS -->
+          </div>
+          
+          <!-- Empty State -->
+          <div class="bank-empty is-hidden" id="bankEmpty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <p>No assignments available</p>
+          </div>
         </div>
       </aside>
 
@@ -288,6 +338,6 @@
       <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
     </footer>
 
-    <script src="script.js?v=8.3"></script>
+    <script src="script.js?v=9.0"></script>
   </body>
 </html>

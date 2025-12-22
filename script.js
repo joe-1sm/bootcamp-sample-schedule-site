@@ -475,6 +475,7 @@
     initDaySwitcher(); // Initialize day switcher
     initVideoModal(); // Initialize video replay modal
     initWeekNavigation(); // Initialize week navigation
+    initAssignmentBank(); // Initialize assignment bank tabs
     resetActiveState();
     
     // Update day labels and header for the initial week (important if starting on Week 2+)
@@ -1040,6 +1041,277 @@
         videoModal.body.innerHTML = '';
       }
     }, 300); // Wait for transition
+  }
+
+  // ============================================
+  // ASSIGNMENT BANK FUNCTIONALITY
+  // ============================================
+  
+  const assignmentBank = {
+    // DOM elements
+    tabSession: null,
+    tabBank: null,
+    panelSession: null,
+    panelBank: null,
+    bankList: null,
+    bankLoading: null,
+    bankEmpty: null,
+    
+    // State
+    assignments: [],
+    isLoaded: false,
+    studentRecordId: null,
+    activeTab: 'session' // 'session' or 'bank'
+  };
+
+  /**
+   * Initialize Assignment Bank functionality
+   */
+  function initAssignmentBank() {
+    // Cache DOM elements
+    assignmentBank.tabSession = document.getElementById('tabSession');
+    assignmentBank.tabBank = document.getElementById('tabBank');
+    assignmentBank.panelSession = document.getElementById('panelSession');
+    assignmentBank.panelBank = document.getElementById('panelBank');
+    assignmentBank.bankList = document.getElementById('bankList');
+    assignmentBank.bankLoading = document.getElementById('bankLoading');
+    assignmentBank.bankEmpty = document.getElementById('bankEmpty');
+    
+    if (!assignmentBank.tabSession || !assignmentBank.tabBank) {
+      console.warn('[AssignmentBank] Tab elements not found');
+      return;
+    }
+    
+    // Attach tab click handlers
+    assignmentBank.tabSession.addEventListener('click', () => switchTab('session'));
+    assignmentBank.tabBank.addEventListener('click', () => switchTab('bank'));
+    
+    // Pre-fetch student record ID if we have an email
+    if (studentEmail) {
+      fetchStudentRecordId();
+    }
+    
+    console.log('[AssignmentBank] Initialized');
+  }
+
+  /**
+   * Switch between tabs
+   * @param {string} tab - 'session' or 'bank'
+   */
+  function switchTab(tab) {
+    if (assignmentBank.activeTab === tab) return;
+    
+    assignmentBank.activeTab = tab;
+    
+    // Update tab buttons
+    assignmentBank.tabSession.classList.toggle('panel-tab--active', tab === 'session');
+    assignmentBank.tabSession.setAttribute('aria-selected', tab === 'session' ? 'true' : 'false');
+    
+    assignmentBank.tabBank.classList.toggle('panel-tab--active', tab === 'bank');
+    assignmentBank.tabBank.setAttribute('aria-selected', tab === 'bank' ? 'true' : 'false');
+    
+    // Show/hide panels
+    assignmentBank.panelSession.classList.toggle('is-hidden', tab !== 'session');
+    assignmentBank.panelBank.classList.toggle('is-hidden', tab !== 'bank');
+    
+    // Load assignments when switching to bank tab (lazy load)
+    if (tab === 'bank' && !assignmentBank.isLoaded) {
+      fetchPotentialAssignments();
+    }
+    
+    console.log('[AssignmentBank] Switched to tab:', tab);
+  }
+
+  /**
+   * Fetch student record ID from API
+   */
+  async function fetchStudentRecordId() {
+    if (!studentEmail) return;
+    
+    try {
+      const url = `${API_URL}/student-lookup?email=${encodeURIComponent(studentEmail)}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Student lookup failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      if (data.student && data.student.id) {
+        assignmentBank.studentRecordId = data.student.id;
+        console.log('[AssignmentBank] Student record ID:', data.student.id);
+      }
+    } catch (error) {
+      console.warn('[AssignmentBank] Failed to fetch student ID:', error.message);
+    }
+  }
+
+  /**
+   * Fetch potential assignments from API
+   */
+  async function fetchPotentialAssignments() {
+    // Show loading state
+    showBankLoading(true);
+    
+    try {
+      let url = `${API_URL}/potential-assignments`;
+      if (studentEmail) {
+        url += `?studentEmail=${encodeURIComponent(studentEmail)}`;
+      }
+      
+      console.log('[AssignmentBank] Fetching assignments...');
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      assignmentBank.assignments = data.assignments || [];
+      assignmentBank.isLoaded = true;
+      
+      console.log('[AssignmentBank] Loaded', assignmentBank.assignments.length, 'assignments');
+      
+      // Render the list
+      renderAssignmentList();
+      
+    } catch (error) {
+      console.error('[AssignmentBank] Failed to fetch assignments:', error);
+      showBankEmpty(true, 'Failed to load assignments');
+    } finally {
+      showBankLoading(false);
+    }
+  }
+
+  /**
+   * Render the assignment list
+   */
+  function renderAssignmentList() {
+    if (!assignmentBank.bankList) return;
+    
+    // Clear existing items
+    assignmentBank.bankList.innerHTML = '';
+    
+    if (assignmentBank.assignments.length === 0) {
+      showBankEmpty(true);
+      return;
+    }
+    
+    showBankEmpty(false);
+    
+    // Render each assignment
+    assignmentBank.assignments.forEach(assignment => {
+      const item = createAssignmentItem(assignment);
+      assignmentBank.bankList.appendChild(item);
+    });
+  }
+
+  /**
+   * Create an assignment list item element
+   * @param {Object} assignment - Assignment data from API
+   * @returns {HTMLElement}
+   */
+  function createAssignmentItem(assignment) {
+    const item = document.createElement('div');
+    item.className = 'bank-item';
+    item.tabIndex = 0;
+    item.setAttribute('role', 'button');
+    item.setAttribute('aria-label', `${assignment.title}${assignment.estimatedTimeDisplay ? `, ${assignment.estimatedTimeDisplay}` : ''}`);
+    item.dataset.assignmentId = assignment.id;
+    
+    // Build type badge class
+    let typeClass = 'bank-item__type';
+    if (assignment.assignmentType) {
+      typeClass += ` bank-item__type--${assignment.assignmentType}`;
+    }
+    
+    item.innerHTML = `
+      <div class="bank-item__info">
+        <h4 class="bank-item__title">${escapeHtml(assignment.title)}</h4>
+        <div class="bank-item__meta">
+          ${assignment.estimatedTimeDisplay ? `
+            <span class="bank-item__time">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              ${escapeHtml(assignment.estimatedTimeDisplay)}
+            </span>
+          ` : ''}
+          ${assignment.assignmentType ? `
+            <span class="${typeClass}">${escapeHtml(assignment.assignmentType)}</span>
+          ` : ''}
+        </div>
+      </div>
+      <svg class="bank-item__arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    `;
+    
+    // Click handler (will open popup in Phase 5)
+    item.addEventListener('click', () => handleAssignmentClick(assignment));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleAssignmentClick(assignment);
+      }
+    });
+    
+    return item;
+  }
+
+  /**
+   * Handle click on an assignment item
+   * For now, just log - Phase 5 will add the popup
+   * @param {Object} assignment
+   */
+  function handleAssignmentClick(assignment) {
+    console.log('[AssignmentBank] Clicked assignment:', assignment);
+    // TODO Phase 5: Open draggable popup with assignment details
+    alert(`Selected: ${assignment.title}\n\nFull popup coming in Phase 5!`);
+  }
+
+  /**
+   * Show/hide loading state
+   * @param {boolean} show
+   */
+  function showBankLoading(show) {
+    if (assignmentBank.bankLoading) {
+      assignmentBank.bankLoading.classList.toggle('is-hidden', !show);
+    }
+    if (assignmentBank.bankList) {
+      assignmentBank.bankList.classList.toggle('is-hidden', show);
+    }
+  }
+
+  /**
+   * Show/hide empty state
+   * @param {boolean} show
+   * @param {string} [message] - Optional custom message
+   */
+  function showBankEmpty(show, message) {
+    if (!assignmentBank.bankEmpty) return;
+    
+    assignmentBank.bankEmpty.classList.toggle('is-hidden', !show);
+    
+    if (show && message) {
+      const msgEl = assignmentBank.bankEmpty.querySelector('p');
+      if (msgEl) {
+        msgEl.textContent = message;
+      }
+    }
+  }
+
+  /**
+   * Escape HTML to prevent XSS
+   * @param {string} str
+   * @returns {string}
+   */
+  function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   // ============================================
