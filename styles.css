@@ -774,11 +774,17 @@ h1 {
   color: #22c55e;
 }
 
+/* Top row of details header - edit button and completion checkbox */
+.details-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 28px;
+  margin-bottom: 8px;
+}
+
 /* Edit assignment button - for creator-owned assignments */
 .edit-assignment-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -801,11 +807,6 @@ h1 {
 
 .edit-assignment-btn svg {
   flex-shrink: 0;
-}
-
-/* When completion checkbox is visible, stack them */
-.details-header:has(.completion-checkbox:not(.is-hidden)) .edit-assignment-btn {
-  top: 44px;
 }
 
 /* Join button - displayed below the time */

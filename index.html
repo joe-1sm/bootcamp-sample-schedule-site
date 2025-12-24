@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=11.0" />
+    <link rel="stylesheet" href="styles.css?v=11.1" />
     <script>
       // Only run iframe code if actually inside an iframe
       if (window.self !== window.top) {
@@ -241,25 +241,26 @@
         <!-- Session Details Panel -->
         <div class="details-card" id="panelSession" role="tabpanel" aria-labelledby="tabSession" tabindex="-1">
           <div class="details-header">
-            <p class="details-label">Selected session</p>
-            <!-- Completion checkbox (only for homework) -->
-            <label class="completion-checkbox is-hidden" id="completionCheckbox">
-              <input type="checkbox" id="completionInput" />
-              <span class="completion-checkbox__box">
-                <svg class="completion-checkbox__check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
+            <div class="details-header-top">
+              <!-- Edit button (only for assignments created by the user) -->
+              <button class="edit-assignment-btn is-hidden" id="editAssignmentBtn" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-              </span>
-              <span class="completion-checkbox__label">Mark Complete</span>
-            </label>
-            <!-- Edit button (only for assignments created by the user) -->
-            <button class="edit-assignment-btn is-hidden" id="editAssignmentBtn" type="button">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-              Edit
-            </button>
+                Edit
+              </button>
+              <!-- Completion checkbox (only for homework) -->
+              <label class="completion-checkbox is-hidden" id="completionCheckbox">
+                <input type="checkbox" id="completionInput" />
+                <span class="completion-checkbox__box">
+                  <svg class="completion-checkbox__check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span class="completion-checkbox__label">Mark Complete</span>
+              </label>
+            </div>
             <h2 class="details-title" id="detailsTitle">Choose any event</h2>
             <p class="details-time is-hidden" id="detailsTime"></p>
             <a 
@@ -692,6 +693,6 @@
       <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
     </footer>
 
-    <script src="script.js?v=11.4"></script>
+    <script src="script.js?v=11.5"></script>
   </body>
 </html>
