@@ -973,8 +973,9 @@ async function toggleAssignmentCompletion(env, assignmentId, studentRecordId, is
   const baseId = env.AIRTABLE_BASE_ID;
   const token = env.AIRTABLE_TOKEN;
 
-  // First, fetch the current students_completed array
-  const getUrl = `https://api.airtable.com/v0/${baseId}/Assignments/${assignmentId}?fields[]=students_completed`;
+  // First, fetch the current record to get students_completed array
+  // Fetch full record (filtering fields was causing 422 errors)
+  const getUrl = `https://api.airtable.com/v0/${baseId}/Assignments/${assignmentId}`;
   
   const getResponse = await fetch(getUrl, {
     headers: {

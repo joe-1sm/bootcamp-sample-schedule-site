@@ -798,9 +798,12 @@
     details.timeEl.style.display = "block"; // Force display with inline style
     details.descriptionEl.innerHTML = eventData.description;
     
-    // Show/hide completion checkbox (only for homework events)
+    // Show/hide completion checkbox (only for homework events with real Airtable IDs)
+    // Airtable record IDs start with "rec" - fallback/demo events have fake IDs
+    const isRealAirtableRecord = eventData.id && eventData.id.startsWith('rec');
+    
     if (details.completionCheckbox && details.completionInput) {
-      if (eventData.type === 'homework' && studentEmail) {
+      if (eventData.type === 'homework' && studentEmail && isRealAirtableRecord) {
         details.completionCheckbox.classList.remove("is-hidden");
         details.completionInput.checked = eventData.isCompleted || false;
         // Update label text based on state
@@ -1095,6 +1098,14 @@
       
       if (!eventId) {
         console.warn('[Completion] No event ID found');
+        e.target.checked = !isCompleted; // Revert
+        return;
+      }
+      
+      // Validate this is a real Airtable record ID
+      if (!eventId.startsWith('rec')) {
+        console.warn('[Completion] Invalid event ID (not an Airtable record):', eventId);
+        alert('This assignment cannot be marked complete (demo/preview assignment).');
         e.target.checked = !isCompleted; // Revert
         return;
       }
