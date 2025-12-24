@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=9.0" />
+    <link rel="stylesheet" href="styles.css?v=10.7" />
     <script>
       // Only run iframe code if actually inside an iframe
       if (window.self !== window.top) {
@@ -281,6 +281,100 @@
             <p class="bank-subtitle">Browse and add assignments to your calendar</p>
           </div>
           
+          <!-- Filters Section -->
+          <div class="bank-filters" id="bankFilters">
+            <div class="filter-row">
+              <!-- Assignment Type Dropdown -->
+              <div class="filter-group">
+                <label class="filter-group__label">Type</label>
+                <div class="filter-select-wrapper">
+                  <div class="filter-select-display" id="typeDisplay">
+                    <span class="filter-select-placeholder">All types</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                  <div class="filter-dropdown filter-dropdown--left is-hidden" id="typeDropdown">
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="all" checked> All types</label>
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="mcat-style"> MCAT-Style</label>
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="anki"> Anki</label>
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="video"> Video</label>
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="study-guide"> Study Guide</label>
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="textbook"> Textbook</label>
+                    <label class="filter-radio"><input type="radio" name="typeFilter" value="guided-review"> Guided Review</label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Subjects Dropdown -->
+              <div class="filter-group">
+                <label class="filter-group__label">Subjects</label>
+                <div class="filter-select-wrapper">
+                  <div class="filter-select-display" id="subjectsDisplay">
+                    <span class="filter-select-placeholder">All subjects</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                  <div class="filter-dropdown filter-dropdown--left is-hidden" id="subjectsDropdown">
+                    <label class="filter-checkbox"><input type="checkbox" value="Physics"> Physics</label>
+                    <label class="filter-checkbox"><input type="checkbox" value="General Chemistry"> General Chemistry</label>
+                    <label class="filter-checkbox"><input type="checkbox" value="Organic Chemistry"> Organic Chemistry</label>
+                    <label class="filter-checkbox"><input type="checkbox" value="Biochemistry"> Biochemistry</label>
+                    <label class="filter-checkbox"><input type="checkbox" value="Biology"> Biology</label>
+                    <label class="filter-checkbox"><input type="checkbox" value="Psych/Soc"> Psych/Soc</label>
+                    <label class="filter-checkbox"><input type="checkbox" value="CARS"> CARS</label>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Question Source Dropdown (Conditional) -->
+              <div class="filter-group filter-group--source is-hidden" id="sourceFilterGroup">
+                <label class="filter-group__label">Source</label>
+                <div class="filter-select-wrapper">
+                  <div class="filter-select-display" id="sourceDisplay">
+                    <span class="filter-select-placeholder">All sources</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                  <div class="filter-dropdown filter-dropdown--left is-hidden" id="sourceDropdown">
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="all" checked> All sources</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="AAMC"> AAMC</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="UWorld"> UWorld</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="1SM"> 1SM</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="Kaplan"> Kaplan</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="Princeton Review"> Princeton Review</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="Blueprint"> Blueprint</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="Jack Westin"> Jack Westin</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="Altius"> Altius</label>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="Other"> Other</label>
+                    <div class="filter-dropdown__divider"></div>
+                    <label class="filter-radio"><input type="radio" name="sourceFilter" value="none"> No MCAT-style</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Active Filters Display -->
+            <div class="active-filters is-hidden" id="activeFilters">
+              <span class="active-filters__label">Filters:</span>
+              <div class="active-filters__tags" id="activeFilterTags"></div>
+              <button class="active-filters__clear" id="clearFilters">Clear all</button>
+            </div>
+          </div>
+          
+          <!-- Create Custom Button -->
+          <div class="bank-create-row">
+            <button class="bank-create-btn" id="createCustomBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Create Custom Assignment
+            </button>
+          </div>
+          
           <!-- Loading State -->
           <div class="bank-loading" id="bankLoading">
             <div class="bank-spinner"></div>
@@ -334,10 +428,252 @@
       </div>
     </div>
 
+    <!-- Assignment Popup (Draggable) -->
+    <div class="assignment-popup is-hidden" id="assignmentPopup" role="dialog" aria-labelledby="popupTitle">
+      <div class="assignment-popup__header" id="popupDragHandle">
+        <h3 class="assignment-popup__title" id="popupTitle">Assignment Details</h3>
+        <button class="assignment-popup__close" id="popupClose" aria-label="Close popup">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="assignment-popup__body">
+        <!-- Time Estimate -->
+        <div class="popup-field" id="popupTimeField">
+          <span class="popup-field__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+          <span class="popup-field__label">Estimated Time:</span>
+          <span class="popup-field__value" id="popupTime">--</span>
+        </div>
+        
+        <!-- Easy Link Status -->
+        <div class="popup-field" id="popupLinkField">
+          <span class="popup-field__label">Easy Link:</span>
+          <span class="popup-field__status" id="popupLinkStatus">
+            <!-- Will be filled with checkmark or X -->
+          </span>
+        </div>
+        
+        <!-- Type Badge -->
+        <div class="popup-field" id="popupTypeField">
+          <span class="popup-field__label">Type:</span>
+          <span class="popup-field__badge" id="popupType">--</span>
+        </div>
+        
+        <!-- Subjects -->
+        <div class="popup-field" id="popupSubjectsField">
+          <span class="popup-field__label">Subjects:</span>
+          <span class="popup-field__value" id="popupSubjects">--</span>
+        </div>
+        
+        <!-- UWorld Info (conditional) -->
+        <div class="popup-uworld is-hidden" id="popupUworldSection">
+          <div class="popup-field">
+            <span class="popup-field__label">UWorld Test ID:</span>
+            <span class="popup-field__value popup-field__value--mono" id="popupUworldId">--</span>
+          </div>
+          <div class="popup-field">
+            <span class="popup-field__label">Question IDs:</span>
+            <span class="popup-field__value popup-field__value--mono popup-field__value--wrap" id="popupQidString">--</span>
+          </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="popup-description is-hidden" id="popupDescSection">
+          <h4 class="popup-description__label">Description</h4>
+          <div class="popup-description__content" id="popupDescription">
+            <!-- Description HTML will be injected here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scheduling Section -->
+      <div class="popup-schedule" id="popupScheduleSection">
+        <h4 class="popup-schedule__label">Schedule This Assignment</h4>
+        
+        <div class="popup-schedule__row">
+          <div class="popup-schedule__field">
+            <label for="scheduleDate">Date</label>
+            <input type="date" id="scheduleDate" class="popup-schedule__input">
+          </div>
+          <div class="popup-schedule__field">
+            <label for="scheduleTime">Start Time</label>
+            <input type="time" id="scheduleTime" class="popup-schedule__input" value="09:00">
+          </div>
+        </div>
+        
+        <div class="popup-schedule__duration">
+          <span class="popup-schedule__duration-label">Duration:</span>
+          <span class="popup-schedule__duration-value" id="scheduleDuration">--</span>
+          <span class="popup-schedule__end-time" id="scheduleEndTime"></span>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="assignment-popup__footer">
+        <a href="#" class="popup-btn popup-btn--primary is-hidden" id="popupStartBtn" target="_blank">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Get Started
+        </a>
+        <button class="popup-btn popup-btn--accent" id="popupConfirmBtn" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span id="popupConfirmText">Add to My Calendar</span>
+        </button>
+      </div>
+      
+      <!-- Success Message -->
+      <div class="popup-success is-hidden" id="popupSuccess">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>Added to your calendar!</span>
+      </div>
+    </div>
+
+    <!-- Custom Assignment Form Modal -->
+    <div class="custom-form-modal is-hidden" id="customFormModal">
+      <div class="custom-form-modal__backdrop" id="customFormBackdrop"></div>
+      <div class="custom-form-modal__content">
+        <div class="custom-form-modal__header">
+          <h3 class="custom-form-modal__title">Create Custom Assignment</h3>
+          <button class="custom-form-modal__close" id="customFormClose" aria-label="Close form">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        
+        <form class="custom-form" id="customAssignmentForm">
+          <!-- Title -->
+          <div class="custom-form__group">
+            <label for="customTitle" class="custom-form__label">Title <span class="required">*</span></label>
+            <input type="text" id="customTitle" class="custom-form__input" placeholder="e.g., Review Biochemistry Notes" required>
+          </div>
+          
+          <!-- Date & Time Row -->
+          <div class="custom-form__row">
+            <div class="custom-form__group">
+              <label for="customDate" class="custom-form__label">Date <span class="required">*</span></label>
+              <input type="date" id="customDate" class="custom-form__input" required>
+            </div>
+            <div class="custom-form__group">
+              <label for="customTime" class="custom-form__label">Start Time <span class="required">*</span></label>
+              <input type="time" id="customTime" class="custom-form__input" value="09:00" required>
+            </div>
+          </div>
+          
+          <!-- Duration -->
+          <div class="custom-form__group">
+            <label for="customDuration" class="custom-form__label">Duration <span class="required">*</span></label>
+            <select id="customDuration" class="custom-form__select" required>
+              <option value="900">15 minutes</option>
+              <option value="1800" selected>30 minutes</option>
+              <option value="2700">45 minutes</option>
+              <option value="3600">1 hour</option>
+              <option value="5400">1.5 hours</option>
+              <option value="7200">2 hours</option>
+              <option value="10800">3 hours</option>
+              <option value="14400">4 hours</option>
+            </select>
+          </div>
+          
+          <!-- Type (Optional) -->
+          <div class="custom-form__group">
+            <label for="customType" class="custom-form__label">Type <span class="optional">(optional)</span></label>
+            <select id="customType" class="custom-form__select">
+              <option value="">-- Select type --</option>
+              <option value="mcat-style">MCAT-style Questions</option>
+              <option value="anki">Anki / Flashcards</option>
+              <option value="study-guide">Study Guide</option>
+              <option value="textbook">Textbook Reading</option>
+              <option value="video">Video</option>
+              <option value="guided-review">Guided Review</option>
+            </select>
+          </div>
+          
+          <!-- Question Source (Conditional: shows when Type = mcat-style) -->
+          <div class="custom-form__group custom-form__conditional is-hidden" id="customSourceGroup">
+            <label for="customSource" class="custom-form__label">Question Source</label>
+            <select id="customSource" class="custom-form__select">
+              <option value="">-- Select source --</option>
+              <option value="AAMC">AAMC</option>
+              <option value="UWorld">UWorld</option>
+              <option value="1SM">1SM</option>
+              <option value="Kaplan">Kaplan</option>
+              <option value="Princeton Review">Princeton Review</option>
+              <option value="Blueprint">Blueprint</option>
+              <option value="Jack Westin">Jack Westin</option>
+              <option value="Altius">Altius</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <!-- UWorld Question IDs (Conditional: shows when Source = UWorld) -->
+          <div class="custom-form__group custom-form__conditional is-hidden" id="customQidsGroup">
+            <label for="customQids" class="custom-form__label">UWorld Question IDs</label>
+            <input type="text" id="customQids" class="custom-form__input" placeholder="e.g., 12345, 12346, 12347">
+            <span class="custom-form__hint">Comma-separated list of question IDs</span>
+          </div>
+          
+          <!-- Number of Questions (Conditional: shows when Source ≠ UWorld) -->
+          <div class="custom-form__group custom-form__conditional is-hidden" id="customNumQuestionsGroup">
+            <label for="customNumQuestions" class="custom-form__label"># of Questions</label>
+            <input type="number" id="customNumQuestions" class="custom-form__input" min="1" placeholder="e.g., 10">
+          </div>
+          
+          <!-- Link (Optional) -->
+          <div class="custom-form__group">
+            <label for="customLink" class="custom-form__label">Link <span class="optional">(optional)</span></label>
+            <input type="url" id="customLink" class="custom-form__input" placeholder="https://...">
+          </div>
+          
+          <!-- Notes (Optional) -->
+          <div class="custom-form__group">
+            <label for="customNotes" class="custom-form__label">Notes <span class="optional">(optional)</span></label>
+            <textarea id="customNotes" class="custom-form__textarea" rows="2" placeholder="Any notes for yourself..."></textarea>
+          </div>
+          
+          <!-- Submit Button -->
+          <div class="custom-form__footer">
+            <button type="button" class="custom-form__btn custom-form__btn--cancel" id="customFormCancel">Cancel</button>
+            <button type="submit" class="custom-form__btn custom-form__btn--submit" id="customFormSubmit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span id="customFormSubmitText">Add to Calendar</span>
+            </button>
+          </div>
+        </form>
+        
+        <!-- Success State -->
+        <div class="custom-form__success is-hidden" id="customFormSuccess">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span>Assignment created!</span>
+        </div>
+      </div>
+    </div>
+
     <footer class="site-footer">
       <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
     </footer>
 
-    <script src="script.js?v=9.0"></script>
+    <script src="script.js?v=10.7"></script>
   </body>
 </html>

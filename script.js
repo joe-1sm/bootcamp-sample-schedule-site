@@ -476,6 +476,8 @@
     initVideoModal(); // Initialize video replay modal
     initWeekNavigation(); // Initialize week navigation
     initAssignmentBank(); // Initialize assignment bank tabs
+    initAssignmentPopup(); // Initialize assignment popup
+    initCustomForm(); // Initialize custom assignment form
     resetActiveState();
     
     // Update day labels and header for the initial week (important if starting on Week 2+)
@@ -745,6 +747,9 @@
     activeElement = element;
     activeEventId = id;
     updateDetails(eventData);
+    
+    // Auto-switch to Selected Session tab if Assignment Bank is active
+    switchToSessionTab();
   }
 
   function resetActiveState() {
@@ -1115,11 +1120,26 @@
     assignmentBank.panelBank.classList.toggle('is-hidden', tab !== 'bank');
     
     // Load assignments when switching to bank tab (lazy load)
-    if (tab === 'bank' && !assignmentBank.isLoaded) {
-      fetchPotentialAssignments();
+    if (tab === 'bank') {
+      if (!assignmentBank.isLoaded) {
+        fetchPotentialAssignments();
+      }
+      // Initialize filters if not already done
+      if (!bankFilters.typePills || bankFilters.typePills.length === 0) {
+        initBankFilters();
+      }
     }
     
     console.log('[AssignmentBank] Switched to tab:', tab);
+  }
+
+  /**
+   * Switch to Selected Session tab (called when clicking calendar events)
+   */
+  function switchToSessionTab() {
+    if (assignmentBank.activeTab !== 'session') {
+      switchTab('session');
+    }
   }
 
   /**
@@ -1218,6 +1238,7 @@
     item.setAttribute('role', 'button');
     item.setAttribute('aria-label', `${assignment.title}${assignment.estimatedTimeDisplay ? `, ${assignment.estimatedTimeDisplay}` : ''}`);
     item.dataset.assignmentId = assignment.id;
+    item.dataset.id = assignment.id; // For removal targeting
     
     // Build type badge class
     let typeClass = 'bank-item__type';
@@ -1267,8 +1288,829 @@
    */
   function handleAssignmentClick(assignment) {
     console.log('[AssignmentBank] Clicked assignment:', assignment);
-    // TODO Phase 5: Open draggable popup with assignment details
-    alert(`Selected: ${assignment.title}\n\nFull popup coming in Phase 5!`);
+    openAssignmentPopup(assignment);
+  }
+
+  // ============================================
+  // ASSIGNMENT POPUP FUNCTIONALITY
+  // ============================================
+
+  const popup = {
+    el: null,
+    header: null,
+    currentAssignment: null,
+    isDragging: false,
+    dragOffset: { x: 0, y: 0 }
+  };
+
+  /**
+   * Initialize popup elements and event handlers
+   */
+  function initAssignmentPopup() {
+    popup.el = document.getElementById('assignmentPopup');
+    popup.header = document.getElementById('popupDragHandle');
+    
+    // Cache scheduling elements
+    popup.dateInput = document.getElementById('scheduleDate');
+    popup.timeInput = document.getElementById('scheduleTime');
+    popup.durationEl = document.getElementById('scheduleDuration');
+    popup.endTimeEl = document.getElementById('scheduleEndTime');
+    popup.confirmBtn = document.getElementById('popupConfirmBtn');
+    popup.confirmText = document.getElementById('popupConfirmText');
+    popup.successEl = document.getElementById('popupSuccess');
+    popup.footerEl = popup.el ? popup.el.querySelector('.assignment-popup__footer') : null;
+    popup.scheduleSection = document.getElementById('popupScheduleSection');
+    
+    if (!popup.el) {
+      console.warn('[Popup] Popup element not found');
+      return;
+    }
+    
+    // Close button
+    const closeBtn = document.getElementById('popupClose');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeAssignmentPopup);
+    }
+    
+    // Drag functionality
+    if (popup.header) {
+      popup.header.addEventListener('mousedown', startDrag);
+      popup.header.addEventListener('touchstart', startDrag, { passive: false });
+    }
+    
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('touchmove', onDrag, { passive: false });
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchend', stopDrag);
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !popup.el.classList.contains('is-hidden')) {
+        closeAssignmentPopup();
+      }
+    });
+    
+    // Scheduling inputs - update end time when date/time changes
+    if (popup.dateInput) {
+      popup.dateInput.addEventListener('change', updateScheduleEndTime);
+    }
+    if (popup.timeInput) {
+      popup.timeInput.addEventListener('change', updateScheduleEndTime);
+    }
+    
+    // Confirm button - create assignment
+    if (popup.confirmBtn) {
+      popup.confirmBtn.addEventListener('click', handleConfirmSchedule);
+    }
+    
+    console.log('[Popup] Initialized');
+  }
+
+  /**
+   * Open the assignment popup with details
+   * @param {Object} assignment - Assignment data from API
+   */
+  function openAssignmentPopup(assignment) {
+    if (!popup.el) return;
+    
+    popup.currentAssignment = assignment;
+    
+    // Populate title
+    const titleEl = document.getElementById('popupTitle');
+    if (titleEl) titleEl.textContent = assignment.title || 'Assignment';
+    
+    // Populate time estimate
+    const timeEl = document.getElementById('popupTime');
+    const timeField = document.getElementById('popupTimeField');
+    if (timeEl && timeField) {
+      if (assignment.estimatedTimeDisplay) {
+        timeEl.textContent = assignment.estimatedTimeDisplay;
+        timeField.classList.remove('is-hidden');
+      } else {
+        timeField.classList.add('is-hidden');
+      }
+    }
+    
+    // Populate link status
+    const linkStatus = document.getElementById('popupLinkStatus');
+    const linkField = document.getElementById('popupLinkField');
+    if (linkStatus && linkField) {
+      if (assignment.getStartedLink) {
+        linkStatus.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Available
+        `;
+        linkStatus.className = 'popup-field__status popup-field__status--yes';
+      } else {
+        linkStatus.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          Not available
+        `;
+        linkStatus.className = 'popup-field__status popup-field__status--no';
+      }
+    }
+    
+    // Populate type badge
+    const typeEl = document.getElementById('popupType');
+    const typeField = document.getElementById('popupTypeField');
+    if (typeEl && typeField) {
+      if (assignment.assignmentType) {
+        typeEl.textContent = assignment.assignmentType;
+        typeEl.className = `popup-field__badge popup-field__badge--${assignment.assignmentType}`;
+        typeField.classList.remove('is-hidden');
+      } else {
+        typeField.classList.add('is-hidden');
+      }
+    }
+    
+    // Populate subjects
+    const subjectsEl = document.getElementById('popupSubjects');
+    const subjectsField = document.getElementById('popupSubjectsField');
+    if (subjectsEl && subjectsField) {
+      if (assignment.subjects && assignment.subjects.length > 0) {
+        subjectsEl.textContent = assignment.subjects.join(', ');
+        subjectsField.classList.remove('is-hidden');
+      } else {
+        subjectsField.classList.add('is-hidden');
+      }
+    }
+    
+    // Populate UWorld section (if applicable)
+    const uworldSection = document.getElementById('popupUworldSection');
+    const uworldIdEl = document.getElementById('popupUworldId');
+    const qidStringEl = document.getElementById('popupQidString');
+    if (uworldSection) {
+      if (assignment.uworldTestId || assignment.uworldQidString) {
+        uworldSection.classList.remove('is-hidden');
+        if (uworldIdEl) uworldIdEl.textContent = assignment.uworldTestId || '--';
+        if (qidStringEl) qidStringEl.textContent = assignment.uworldQidString || '--';
+      } else {
+        uworldSection.classList.add('is-hidden');
+      }
+    }
+    
+    // Populate description (API returns 'description' as HTML-converted)
+    const descSection = document.getElementById('popupDescSection');
+    const descEl = document.getElementById('popupDescription');
+    if (descSection && descEl) {
+      if (assignment.description) {
+        descEl.innerHTML = assignment.description;
+        descSection.classList.remove('is-hidden');
+      } else {
+        descSection.classList.add('is-hidden');
+      }
+    }
+    
+    // Update Get Started button
+    const startBtn = document.getElementById('popupStartBtn');
+    if (startBtn) {
+      if (assignment.getStartedLink) {
+        startBtn.href = assignment.getStartedLink;
+        startBtn.classList.remove('is-hidden');
+      } else {
+        startBtn.classList.add('is-hidden');
+      }
+    }
+    
+    // Set up scheduling section
+    setupSchedulingSection(assignment);
+    
+    // Reset position to center
+    popup.el.style.top = '50%';
+    popup.el.style.left = '50%';
+    popup.el.style.transform = 'translate(-50%, -50%)';
+    
+    // Show popup
+    popup.el.classList.remove('is-hidden');
+    
+    // Focus the close button for accessibility
+    const closeBtn = document.getElementById('popupClose');
+    if (closeBtn) closeBtn.focus();
+    
+    console.log('[Popup] Opened for:', assignment.title);
+  }
+
+  /**
+   * Set up the scheduling section with default values
+   */
+  function setupSchedulingSection(assignment) {
+    // Reset UI state
+    if (popup.successEl) popup.successEl.classList.add('is-hidden');
+    if (popup.footerEl) popup.footerEl.classList.remove('is-hidden');
+    if (popup.scheduleSection) popup.scheduleSection.classList.remove('is-hidden');
+    
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().split('T')[0];
+    
+    if (popup.dateInput) {
+      popup.dateInput.value = dateStr;
+    }
+    
+    // Set default time to 9:00 AM
+    if (popup.timeInput) {
+      popup.timeInput.value = '09:00';
+    }
+    
+    // Set duration display
+    if (popup.durationEl) {
+      popup.durationEl.textContent = assignment.estimatedTimeDisplay || '30m';
+    }
+    
+    // Store estimated time in seconds for calculations
+    popup.estimatedSeconds = assignment.estimatedTime || 1800; // Default 30 minutes
+    
+    // Update end time calculation
+    updateScheduleEndTime();
+    
+    // Enable confirm button
+    if (popup.confirmBtn) {
+      popup.confirmBtn.disabled = false;
+    }
+    if (popup.confirmText) {
+      popup.confirmText.textContent = 'Add to My Calendar';
+    }
+  }
+
+  /**
+   * Update the end time display based on date, time, and duration
+   */
+  function updateScheduleEndTime() {
+    if (!popup.dateInput || !popup.timeInput || !popup.endTimeEl) return;
+    
+    const dateVal = popup.dateInput.value;
+    const timeVal = popup.timeInput.value;
+    
+    if (!dateVal || !timeVal) {
+      popup.endTimeEl.textContent = '';
+      if (popup.confirmBtn) popup.confirmBtn.disabled = true;
+      return;
+    }
+    
+    // Parse start datetime
+    const startDate = new Date(`${dateVal}T${timeVal}:00`);
+    
+    // Calculate end time
+    const endDate = new Date(startDate.getTime() + (popup.estimatedSeconds || 1800) * 1000);
+    
+    // Format end time
+    const endTimeStr = endDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    popup.endTimeEl.textContent = `→ Ends at ${endTimeStr}`;
+    
+    // Enable confirm button
+    if (popup.confirmBtn) popup.confirmBtn.disabled = false;
+  }
+
+  /**
+   * Handle confirm button click - create assignment via API
+   */
+  async function handleConfirmSchedule() {
+    if (!popup.currentAssignment || !popup.dateInput || !popup.timeInput) return;
+    
+    const dateVal = popup.dateInput.value;
+    const timeVal = popup.timeInput.value;
+    
+    if (!dateVal || !timeVal) {
+      alert('Please select a date and time');
+      return;
+    }
+    
+    // Disable button and show loading state
+    if (popup.confirmBtn) popup.confirmBtn.disabled = true;
+    if (popup.confirmText) popup.confirmText.textContent = 'Adding...';
+    
+    // Calculate start and end times
+    const startDate = new Date(`${dateVal}T${timeVal}:00`);
+    const endDate = new Date(startDate.getTime() + (popup.estimatedSeconds || 1800) * 1000);
+    
+    // Get student record ID
+    const studentEmail = assignmentBank.studentEmail;
+    if (!studentEmail) {
+      alert('Student email not found. Please refresh the page.');
+      if (popup.confirmText) popup.confirmText.textContent = 'Add to My Calendar';
+      if (popup.confirmBtn) popup.confirmBtn.disabled = false;
+      return;
+    }
+    
+    // Fetch student record ID if we don't have it
+    let studentRecordId = assignmentBank.studentRecordId;
+    if (!studentRecordId) {
+      try {
+        studentRecordId = await fetchStudentRecordId(studentEmail);
+        assignmentBank.studentRecordId = studentRecordId;
+      } catch (err) {
+        console.error('[Schedule] Failed to get student record ID:', err);
+        alert('Could not find your student record. Please contact support.');
+        if (popup.confirmText) popup.confirmText.textContent = 'Add to My Calendar';
+        if (popup.confirmBtn) popup.confirmBtn.disabled = false;
+        return;
+      }
+    }
+    
+    // Build assignment data
+    const assignment = popup.currentAssignment;
+    const assignmentData = {
+      title: assignment.title,
+      studentRecordId: studentRecordId,
+      startDateTime: startDate.toISOString(),
+      endDateTime: endDate.toISOString(),
+      sourcePotentialAssignmentId: assignment.sourcePotentialId || assignment.id,
+      getStartedLink: assignment.getStartedLink || '',
+      estimatedTime: popup.estimatedSeconds || 1800,
+      assignmentType: assignment.assignmentType || '',
+      subjects: assignment.subjects || [],
+      questionSource: assignment.questionSource || '',
+    };
+    
+    console.log('[Schedule] Creating assignment:', assignmentData);
+    
+    try {
+      const response = await fetch(`${API_BASE}/assignments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(assignmentData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create assignment');
+      }
+      
+      const result = await response.json();
+      console.log('[Schedule] Assignment created:', result);
+      
+      // Show success state
+      showScheduleSuccess();
+      
+      // Remove this assignment from the bank (it's now assigned)
+      removeAssignmentFromBank(assignment.id || assignment.sourcePotentialId);
+      
+      // Refresh the calendar to show the new assignment
+      await refreshCalendarEvents();
+      
+    } catch (err) {
+      console.error('[Schedule] Failed to create assignment:', err);
+      alert(`Failed to add assignment: ${err.message}`);
+      if (popup.confirmText) popup.confirmText.textContent = 'Add to My Calendar';
+      if (popup.confirmBtn) popup.confirmBtn.disabled = false;
+    }
+  }
+
+  /**
+   * Show success state in popup
+   */
+  function showScheduleSuccess() {
+    // Hide footer and schedule section, show success
+    if (popup.footerEl) popup.footerEl.classList.add('is-hidden');
+    if (popup.scheduleSection) popup.scheduleSection.classList.add('is-hidden');
+    if (popup.successEl) popup.successEl.classList.remove('is-hidden');
+    
+    // Auto-close popup after 2 seconds
+    setTimeout(() => {
+      closeAssignmentPopup();
+    }, 2000);
+  }
+
+  /**
+   * Remove an assignment from the bank list
+   */
+  function removeAssignmentFromBank(assignmentId) {
+    // Remove from cached data
+    if (assignmentBank.assignments) {
+      assignmentBank.assignments = assignmentBank.assignments.filter(
+        a => a.id !== assignmentId && a.sourcePotentialId !== assignmentId
+      );
+    }
+    
+    // Remove from DOM
+    const itemEl = document.querySelector(`.bank-item[data-id="${assignmentId}"]`);
+    if (itemEl) {
+      itemEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      itemEl.style.opacity = '0';
+      itemEl.style.transform = 'translateX(-20px)';
+      setTimeout(() => itemEl.remove(), 300);
+    }
+    
+    // Check if bank is now empty
+    setTimeout(() => {
+      if (assignmentBank.assignments && assignmentBank.assignments.length === 0) {
+        showBankEmpty(true);
+      }
+    }, 350);
+  }
+
+  /**
+   * Refresh calendar events after adding a new assignment
+   */
+  async function refreshCalendarEvents() {
+    console.log('[Schedule] Refreshing calendar events...');
+    
+    try {
+      const url = new URL(API_BASE);
+      if (assignmentBank.studentEmail) {
+        url.searchParams.set('studentEmail', assignmentBank.studentEmail);
+      }
+      
+      const response = await fetch(url.toString());
+      if (!response.ok) throw new Error('Failed to fetch events');
+      
+      const data = await response.json();
+      events = data.events || [];
+      
+      console.log('[Schedule] Refreshed events, total:', events.length);
+      
+      // Re-render calendar for current week
+      rerenderEventsForWeek();
+      
+    } catch (err) {
+      console.error('[Schedule] Failed to refresh calendar:', err);
+    }
+  }
+
+  // ============================================
+  // CUSTOM ASSIGNMENT FORM
+  // ============================================
+
+  const customForm = {
+    modal: null,
+    backdrop: null,
+    form: null,
+    submitBtn: null,
+    submitText: null,
+    successEl: null,
+  };
+
+  /**
+   * Initialize custom assignment form
+   */
+  function initCustomForm() {
+    customForm.modal = document.getElementById('customFormModal');
+    customForm.backdrop = document.getElementById('customFormBackdrop');
+    customForm.form = document.getElementById('customAssignmentForm');
+    customForm.submitBtn = document.getElementById('customFormSubmit');
+    customForm.submitText = document.getElementById('customFormSubmitText');
+    customForm.successEl = document.getElementById('customFormSuccess');
+    
+    // Conditional field elements
+    customForm.typeSelect = document.getElementById('customType');
+    customForm.sourceGroup = document.getElementById('customSourceGroup');
+    customForm.sourceSelect = document.getElementById('customSource');
+    customForm.qidsGroup = document.getElementById('customQidsGroup');
+    customForm.qidsInput = document.getElementById('customQids');
+    customForm.numQuestionsGroup = document.getElementById('customNumQuestionsGroup');
+    customForm.numQuestionsInput = document.getElementById('customNumQuestions');
+    
+    if (!customForm.modal) {
+      console.warn('[CustomForm] Modal not found');
+      return;
+    }
+    
+    // Create button
+    const createBtn = document.getElementById('createCustomBtn');
+    if (createBtn) {
+      createBtn.addEventListener('click', openCustomForm);
+    }
+    
+    // Close handlers
+    const closeBtn = document.getElementById('customFormClose');
+    const cancelBtn = document.getElementById('customFormCancel');
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeCustomForm);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeCustomForm);
+    if (customForm.backdrop) {
+      customForm.backdrop.addEventListener('click', closeCustomForm);
+    }
+    
+    // Form submit
+    if (customForm.form) {
+      customForm.form.addEventListener('submit', handleCustomFormSubmit);
+    }
+    
+    // Type change handler - show/hide question source
+    if (customForm.typeSelect) {
+      customForm.typeSelect.addEventListener('change', handleCustomTypeChange);
+    }
+    
+    // Source change handler - show/hide QIDs or # of questions
+    if (customForm.sourceSelect) {
+      customForm.sourceSelect.addEventListener('change', handleCustomSourceChange);
+    }
+    
+    // Close on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && customForm.modal && !customForm.modal.classList.contains('is-hidden')) {
+        closeCustomForm();
+      }
+    });
+    
+    console.log('[CustomForm] Initialized');
+  }
+
+  /**
+   * Handle Type dropdown change - show/hide question source field
+   */
+  function handleCustomTypeChange() {
+    const type = customForm.typeSelect?.value;
+    const isMcatStyle = type === 'mcat-style';
+    
+    // Show/hide source dropdown
+    if (customForm.sourceGroup) {
+      customForm.sourceGroup.classList.toggle('is-hidden', !isMcatStyle);
+    }
+    
+    // Reset and hide dependent fields when type changes
+    if (!isMcatStyle) {
+      if (customForm.sourceSelect) customForm.sourceSelect.value = '';
+      if (customForm.qidsGroup) customForm.qidsGroup.classList.add('is-hidden');
+      if (customForm.numQuestionsGroup) customForm.numQuestionsGroup.classList.add('is-hidden');
+      if (customForm.qidsInput) customForm.qidsInput.value = '';
+      if (customForm.numQuestionsInput) customForm.numQuestionsInput.value = '';
+    }
+  }
+
+  /**
+   * Handle Source dropdown change - show QIDs field for UWorld, # questions for others
+   */
+  function handleCustomSourceChange() {
+    const source = customForm.sourceSelect?.value;
+    const isUworld = source === 'UWorld';
+    const hasSource = source && source !== '';
+    
+    // Show QIDs field only for UWorld
+    if (customForm.qidsGroup) {
+      customForm.qidsGroup.classList.toggle('is-hidden', !isUworld);
+    }
+    
+    // Show # of questions field for non-UWorld sources
+    if (customForm.numQuestionsGroup) {
+      customForm.numQuestionsGroup.classList.toggle('is-hidden', !hasSource || isUworld);
+    }
+    
+    // Clear the hidden field when switching
+    if (isUworld && customForm.numQuestionsInput) {
+      customForm.numQuestionsInput.value = '';
+    } else if (!isUworld && customForm.qidsInput) {
+      customForm.qidsInput.value = '';
+    }
+  }
+
+  /**
+   * Open custom form modal
+   */
+  function openCustomForm() {
+    if (!customForm.modal) return;
+    
+    // Reset form
+    if (customForm.form) customForm.form.reset();
+    if (customForm.successEl) customForm.successEl.classList.add('is-hidden');
+    if (customForm.form) customForm.form.classList.remove('is-hidden');
+    
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateInput = document.getElementById('customDate');
+    if (dateInput) {
+      dateInput.value = tomorrow.toISOString().split('T')[0];
+    }
+    
+    // Reset conditional fields visibility
+    if (customForm.sourceGroup) customForm.sourceGroup.classList.add('is-hidden');
+    if (customForm.qidsGroup) customForm.qidsGroup.classList.add('is-hidden');
+    if (customForm.numQuestionsGroup) customForm.numQuestionsGroup.classList.add('is-hidden');
+    
+    // Reset button state
+    if (customForm.submitBtn) customForm.submitBtn.disabled = false;
+    if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
+    
+    // Show modal
+    customForm.modal.classList.remove('is-hidden');
+    
+    // Focus title input
+    const titleInput = document.getElementById('customTitle');
+    if (titleInput) titleInput.focus();
+    
+    console.log('[CustomForm] Opened');
+  }
+
+  /**
+   * Close custom form modal
+   */
+  function closeCustomForm() {
+    if (!customForm.modal) return;
+    customForm.modal.classList.add('is-hidden');
+    console.log('[CustomForm] Closed');
+  }
+
+  /**
+   * Handle custom form submit
+   */
+  async function handleCustomFormSubmit(e) {
+    e.preventDefault();
+    
+    // Get form values
+    const title = document.getElementById('customTitle')?.value?.trim();
+    const dateVal = document.getElementById('customDate')?.value;
+    const timeVal = document.getElementById('customTime')?.value;
+    const durationSeconds = parseInt(document.getElementById('customDuration')?.value || '1800', 10);
+    const assignmentType = document.getElementById('customType')?.value || '';
+    const link = document.getElementById('customLink')?.value?.trim() || '';
+    const notes = document.getElementById('customNotes')?.value?.trim() || '';
+    
+    // MCAT-style specific fields
+    const questionSource = document.getElementById('customSource')?.value || '';
+    const qidsString = document.getElementById('customQids')?.value?.trim() || '';
+    const numQuestionsManual = document.getElementById('customNumQuestions')?.value || '';
+    
+    // Validation
+    if (!title || !dateVal || !timeVal) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    // Disable button
+    if (customForm.submitBtn) customForm.submitBtn.disabled = true;
+    if (customForm.submitText) customForm.submitText.textContent = 'Adding...';
+    
+    // Calculate start and end times
+    const startDate = new Date(`${dateVal}T${timeVal}:00`);
+    const endDate = new Date(startDate.getTime() + durationSeconds * 1000);
+    
+    // Get student record ID
+    const studentEmail = assignmentBank.studentEmail;
+    if (!studentEmail) {
+      alert('Student email not found. Please refresh the page.');
+      if (customForm.submitBtn) customForm.submitBtn.disabled = false;
+      if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
+      return;
+    }
+    
+    let studentRecordId = assignmentBank.studentRecordId;
+    if (!studentRecordId) {
+      try {
+        studentRecordId = await fetchStudentRecordId(studentEmail);
+        assignmentBank.studentRecordId = studentRecordId;
+      } catch (err) {
+        console.error('[CustomForm] Failed to get student record ID:', err);
+        alert('Could not find your student record. Please contact support.');
+        if (customForm.submitBtn) customForm.submitBtn.disabled = false;
+        if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
+        return;
+      }
+    }
+    
+    // Calculate number of questions
+    let numberQuestions = null;
+    let uworldQids = [];
+    
+    if (assignmentType === 'mcat-style' && questionSource) {
+      if (questionSource === 'UWorld' && qidsString) {
+        // Parse UWorld QIDs - split by comma, trim whitespace
+        uworldQids = qidsString.split(',').map(id => id.trim()).filter(id => id);
+        numberQuestions = uworldQids.length;
+      } else if (numQuestionsManual) {
+        numberQuestions = parseInt(numQuestionsManual, 10);
+      }
+    }
+    
+    // Build assignment data
+    const assignmentData = {
+      title: title,
+      studentRecordId: studentRecordId,
+      startDateTime: startDate.toISOString(),
+      endDateTime: endDate.toISOString(),
+      estimatedTime: durationSeconds,
+      assignmentType: assignmentType,
+      getStartedLink: link,
+      description: notes,
+      questionSource: questionSource,
+      uworldQids: uworldQids, // Array of QID strings
+      numberQuestions: numberQuestions,
+    };
+    
+    console.log('[CustomForm] Creating custom assignment:', assignmentData);
+    
+    try {
+      const response = await fetch(`${API_BASE}/assignments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(assignmentData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create assignment');
+      }
+      
+      const result = await response.json();
+      console.log('[CustomForm] Assignment created:', result);
+      
+      // Show success
+      if (customForm.form) customForm.form.classList.add('is-hidden');
+      if (customForm.successEl) customForm.successEl.classList.remove('is-hidden');
+      
+      // Refresh calendar
+      await refreshCalendarEvents();
+      
+      // Auto-close after delay
+      setTimeout(() => {
+        closeCustomForm();
+      }, 1500);
+      
+    } catch (err) {
+      console.error('[CustomForm] Failed to create assignment:', err);
+      alert(`Failed to create assignment: ${err.message}`);
+      if (customForm.submitBtn) customForm.submitBtn.disabled = false;
+      if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
+    }
+  }
+
+  /**
+   * Close the assignment popup
+   */
+  function closeAssignmentPopup() {
+    if (!popup.el) return;
+    popup.el.classList.add('is-hidden');
+    popup.currentAssignment = null;
+    console.log('[Popup] Closed');
+  }
+
+  /**
+   * Start dragging the popup
+   */
+  function startDrag(e) {
+    if (!popup.el || popup.el.classList.contains('is-hidden')) return;
+    
+    // Prevent text selection and default touch behavior
+    e.preventDefault();
+    
+    popup.isDragging = true;
+    popup.el.classList.add('is-dragging');
+    
+    // Get initial position
+    const rect = popup.el.getBoundingClientRect();
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    
+    // Clear transform and set to absolute position
+    popup.el.style.transform = 'none';
+    popup.el.style.left = rect.left + 'px';
+    popup.el.style.top = rect.top + 'px';
+    
+    // Calculate offset from cursor to top-left of popup
+    popup.dragOffset.x = clientX - rect.left;
+    popup.dragOffset.y = clientY - rect.top;
+  }
+
+  /**
+   * Handle drag movement
+   */
+  function onDrag(e) {
+    if (!popup.isDragging || !popup.el) return;
+    
+    e.preventDefault();
+    
+    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+    
+    // Calculate new position
+    let newX = clientX - popup.dragOffset.x;
+    let newY = clientY - popup.dragOffset.y;
+    
+    // Keep within viewport bounds
+    const rect = popup.el.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width;
+    const maxY = window.innerHeight - rect.height;
+    
+    newX = Math.max(0, Math.min(newX, maxX));
+    newY = Math.max(0, Math.min(newY, maxY));
+    
+    popup.el.style.left = newX + 'px';
+    popup.el.style.top = newY + 'px';
+  }
+
+  /**
+   * Stop dragging
+   */
+  function stopDrag() {
+    if (popup.isDragging && popup.el) {
+      popup.isDragging = false;
+      popup.el.classList.remove('is-dragging');
+    }
   }
 
   /**
@@ -1312,6 +2154,496 @@
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  // ============================================
+  // ASSIGNMENT BANK FILTERS
+  // ============================================
+  
+  const bankFilters = {
+    // Current filter values
+    assignmentType: 'all',
+    subjects: [],
+    questionSource: 'all',
+    
+    // DOM elements - Type dropdown
+    typeDisplay: null,
+    typeDropdown: null,
+    // DOM elements - Subjects dropdown
+    subjectsDisplay: null,
+    subjectsDropdown: null,
+    // DOM elements - Source dropdown
+    sourceDisplay: null,
+    sourceDropdown: null,
+    sourceGroup: null,
+    // DOM elements - Active filters
+    activeFiltersEl: null,
+    activeTagsEl: null,
+    clearBtn: null
+  };
+
+  /**
+   * Initialize bank filter handlers
+   */
+  function initBankFilters() {
+    // Cache elements - Type dropdown
+    bankFilters.typeDisplay = document.getElementById('typeDisplay');
+    bankFilters.typeDropdown = document.getElementById('typeDropdown');
+    
+    // Cache elements - Subjects dropdown
+    bankFilters.subjectsDisplay = document.getElementById('subjectsDisplay');
+    bankFilters.subjectsDropdown = document.getElementById('subjectsDropdown');
+    
+    // Cache elements - Source dropdown
+    bankFilters.sourceDisplay = document.getElementById('sourceDisplay');
+    bankFilters.sourceDropdown = document.getElementById('sourceDropdown');
+    bankFilters.sourceGroup = document.getElementById('sourceFilterGroup');
+    
+    // Cache elements - Active filters
+    bankFilters.activeFiltersEl = document.getElementById('activeFilters');
+    bankFilters.activeTagsEl = document.getElementById('activeFilterTags');
+    bankFilters.clearBtn = document.getElementById('clearFilters');
+    
+    if (!bankFilters.typeDisplay) {
+      console.warn('[BankFilters] Filter elements not found');
+      return;
+    }
+    
+    // Type dropdown toggle
+    bankFilters.typeDisplay.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown('type');
+    });
+    
+    // Type radio buttons
+    const typeRadios = document.querySelectorAll('#typeDropdown input[type="radio"]');
+    typeRadios.forEach(radio => {
+      radio.addEventListener('change', handleTypeChange);
+    });
+    
+    // Subjects dropdown toggle
+    if (bankFilters.subjectsDisplay) {
+      bankFilters.subjectsDisplay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDropdown('subjects');
+      });
+    }
+    
+    // Subjects checkboxes
+    const subjectCheckboxes = document.querySelectorAll('#subjectsDropdown input[type="checkbox"]');
+    subjectCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', handleSubjectChange);
+    });
+    
+    // Source dropdown toggle
+    if (bankFilters.sourceDisplay) {
+      bankFilters.sourceDisplay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleDropdown('source');
+      });
+    }
+    
+    // Source radio buttons
+    const sourceRadios = document.querySelectorAll('#sourceDropdown input[type="radio"]');
+    sourceRadios.forEach(radio => {
+      radio.addEventListener('change', handleSourceChange);
+    });
+    
+    // Clear filters button
+    if (bankFilters.clearBtn) {
+      bankFilters.clearBtn.addEventListener('click', clearAllFilters);
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', closeAllDropdowns);
+    
+    console.log('[BankFilters] Initialized');
+  }
+
+  /**
+   * Toggle a specific dropdown (type, subjects, or source)
+   */
+  function toggleDropdown(which) {
+    // Close other dropdowns first
+    if (which !== 'type' && bankFilters.typeDropdown) {
+      bankFilters.typeDropdown.classList.add('is-hidden');
+      bankFilters.typeDisplay.classList.remove('is-open');
+    }
+    if (which !== 'subjects' && bankFilters.subjectsDropdown) {
+      bankFilters.subjectsDropdown.classList.add('is-hidden');
+      bankFilters.subjectsDisplay.classList.remove('is-open');
+    }
+    if (which !== 'source' && bankFilters.sourceDropdown) {
+      bankFilters.sourceDropdown.classList.add('is-hidden');
+      bankFilters.sourceDisplay?.classList.remove('is-open');
+    }
+    
+    // Toggle the requested dropdown
+    let dropdown, display;
+    if (which === 'type') {
+      dropdown = bankFilters.typeDropdown;
+      display = bankFilters.typeDisplay;
+    } else if (which === 'subjects') {
+      dropdown = bankFilters.subjectsDropdown;
+      display = bankFilters.subjectsDisplay;
+    } else if (which === 'source') {
+      dropdown = bankFilters.sourceDropdown;
+      display = bankFilters.sourceDisplay;
+    }
+    
+    if (dropdown && display) {
+      const isOpen = !dropdown.classList.contains('is-hidden');
+      dropdown.classList.toggle('is-hidden', isOpen);
+      display.classList.toggle('is-open', !isOpen);
+    }
+  }
+
+  /**
+   * Close all dropdowns
+   */
+  function closeAllDropdowns(e) {
+    // Check if click is inside any dropdown or display
+    const isInsideFilter = e?.target?.closest('.filter-select-wrapper');
+    if (isInsideFilter) return;
+    
+    if (bankFilters.typeDropdown) {
+      bankFilters.typeDropdown.classList.add('is-hidden');
+      bankFilters.typeDisplay?.classList.remove('is-open');
+    }
+    if (bankFilters.subjectsDropdown) {
+      bankFilters.subjectsDropdown.classList.add('is-hidden');
+      bankFilters.subjectsDisplay?.classList.remove('is-open');
+    }
+    if (bankFilters.sourceDropdown) {
+      bankFilters.sourceDropdown.classList.add('is-hidden');
+      bankFilters.sourceDisplay?.classList.remove('is-open');
+    }
+  }
+
+  /**
+   * Handle type filter change
+   */
+  function handleTypeChange(e) {
+    const type = e.target.value;
+    bankFilters.assignmentType = type;
+    
+    // Update display text
+    updateTypeDisplayText();
+    
+    // Close dropdown
+    if (bankFilters.typeDropdown) {
+      bankFilters.typeDropdown.classList.add('is-hidden');
+      bankFilters.typeDisplay?.classList.remove('is-open');
+    }
+    
+    // Show/hide source filter based on type
+    updateSourceFilterVisibility();
+    
+    // Update active filters display
+    updateActiveFiltersDisplay();
+    
+    // Apply filters
+    applyBankFilters();
+  }
+
+  /**
+   * Update type display text
+   */
+  function updateTypeDisplayText() {
+    const placeholder = bankFilters.typeDisplay?.querySelector('.filter-select-placeholder');
+    if (!placeholder) return;
+    
+    const typeLabels = {
+      'all': 'All types',
+      'mcat-style': 'MCAT-Style',
+      'anki': 'Anki',
+      'video': 'Video',
+      'study-guide': 'Study Guide',
+      'textbook': 'Textbook',
+      'guided-review': 'Guided Review'
+    };
+    
+    placeholder.textContent = typeLabels[bankFilters.assignmentType] || 'All types';
+  }
+
+  /**
+   * Handle subject checkbox change
+   */
+  function handleSubjectChange(e) {
+    const value = e.target.value;
+    const checked = e.target.checked;
+    
+    if (checked && !bankFilters.subjects.includes(value)) {
+      bankFilters.subjects.push(value);
+    } else if (!checked) {
+      bankFilters.subjects = bankFilters.subjects.filter(s => s !== value);
+    }
+    
+    // Update display text
+    updateSubjectsDisplayText();
+    
+    // Update active filters display
+    updateActiveFiltersDisplay();
+    
+    // Apply filters
+    applyBankFilters();
+  }
+
+  /**
+   * Update subjects display text
+   */
+  function updateSubjectsDisplayText() {
+    const placeholder = bankFilters.subjectsDisplay?.querySelector('.filter-select-placeholder');
+    if (!placeholder) return;
+    
+    if (bankFilters.subjects.length === 0) {
+      placeholder.textContent = 'All subjects';
+    } else if (bankFilters.subjects.length === 1) {
+      placeholder.textContent = bankFilters.subjects[0];
+    } else {
+      placeholder.textContent = `${bankFilters.subjects.length} subjects`;
+    }
+  }
+
+  /**
+   * Handle question source change
+   */
+  function handleSourceChange(e) {
+    const source = e.target.value;
+    bankFilters.questionSource = source;
+    
+    // Update display text
+    updateSourceDisplayText();
+    
+    // Close dropdown
+    if (bankFilters.sourceDropdown) {
+      bankFilters.sourceDropdown.classList.add('is-hidden');
+      bankFilters.sourceDisplay?.classList.remove('is-open');
+    }
+    
+    // Update active filters display
+    updateActiveFiltersDisplay();
+    
+    // Apply filters
+    applyBankFilters();
+  }
+
+  /**
+   * Update source display text
+   */
+  function updateSourceDisplayText() {
+    const placeholder = bankFilters.sourceDisplay?.querySelector('.filter-select-placeholder');
+    if (!placeholder) return;
+    
+    const sourceLabels = {
+      'all': 'All sources',
+      'AAMC': 'AAMC',
+      'UWorld': 'UWorld',
+      '1SM': '1SM',
+      'Kaplan': 'Kaplan',
+      'Princeton Review': 'Princeton Review',
+      'Blueprint': 'Blueprint',
+      'Jack Westin': 'Jack Westin',
+      'Altius': 'Altius',
+      'Other': 'Other',
+      'none': 'No MCAT-style'
+    };
+    
+    placeholder.textContent = sourceLabels[bankFilters.questionSource] || 'All sources';
+  }
+
+  /**
+   * Show/hide source filter based on assignment type
+   */
+  function updateSourceFilterVisibility() {
+    if (!bankFilters.sourceGroup) return;
+    
+    // Show source filter for 'all' or 'mcat-style' types
+    const showSource = bankFilters.assignmentType === 'all' || bankFilters.assignmentType === 'mcat-style';
+    bankFilters.sourceGroup.classList.toggle('is-hidden', !showSource);
+    
+    // Reset source filter if hidden
+    if (!showSource) {
+      bankFilters.questionSource = 'all';
+      // Reset radio button
+      const allSourceRadio = document.querySelector('#sourceDropdown input[value="all"]');
+      if (allSourceRadio) allSourceRadio.checked = true;
+      updateSourceDisplayText();
+    }
+  }
+
+  /**
+   * Update active filters display
+   */
+  function updateActiveFiltersDisplay() {
+    if (!bankFilters.activeFiltersEl || !bankFilters.activeTagsEl) return;
+    
+    const tags = [];
+    
+    // Type filter
+    if (bankFilters.assignmentType !== 'all') {
+      tags.push({ type: 'type', value: bankFilters.assignmentType, label: bankFilters.assignmentType });
+    }
+    
+    // Subject filters
+    bankFilters.subjects.forEach(subject => {
+      tags.push({ type: 'subject', value: subject, label: subject });
+    });
+    
+    // Source filter
+    if (bankFilters.questionSource !== 'all') {
+      const label = bankFilters.questionSource === 'none' ? 'No MCAT-style' : bankFilters.questionSource;
+      tags.push({ type: 'source', value: bankFilters.questionSource, label: label });
+    }
+    
+    // Show/hide active filters section
+    bankFilters.activeFiltersEl.classList.toggle('is-hidden', tags.length === 0);
+    
+    // Render tags
+    bankFilters.activeTagsEl.innerHTML = tags.map(tag => `
+      <span class="filter-tag" data-filter-type="${tag.type}" data-filter-value="${tag.value}">
+        ${escapeHtml(tag.label)}
+        <button class="filter-tag__remove" aria-label="Remove ${tag.label} filter">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </span>
+    `).join('');
+    
+    // Attach remove handlers
+    bankFilters.activeTagsEl.querySelectorAll('.filter-tag__remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tag = e.target.closest('.filter-tag');
+        const filterType = tag.dataset.filterType;
+        const filterValue = tag.dataset.filterValue;
+        removeFilter(filterType, filterValue);
+      });
+    });
+  }
+
+  /**
+   * Remove a specific filter
+   */
+  function removeFilter(filterType, filterValue) {
+    if (filterType === 'type') {
+      // Reset to 'all'
+      bankFilters.assignmentType = 'all';
+      const allTypeRadio = document.querySelector('#typeDropdown input[value="all"]');
+      if (allTypeRadio) allTypeRadio.checked = true;
+      updateTypeDisplayText();
+      updateSourceFilterVisibility();
+    } else if (filterType === 'subject') {
+      bankFilters.subjects = bankFilters.subjects.filter(s => s !== filterValue);
+      // Uncheck the checkbox
+      const checkbox = document.querySelector(`#subjectsDropdown input[value="${filterValue}"]`);
+      if (checkbox) checkbox.checked = false;
+      updateSubjectsDisplayText();
+    } else if (filterType === 'source') {
+      bankFilters.questionSource = 'all';
+      const allSourceRadio = document.querySelector('#sourceDropdown input[value="all"]');
+      if (allSourceRadio) allSourceRadio.checked = true;
+      updateSourceDisplayText();
+    }
+    
+    updateActiveFiltersDisplay();
+    applyBankFilters();
+  }
+
+  /**
+   * Clear all filters
+   */
+  function clearAllFilters() {
+    // Reset type
+    bankFilters.assignmentType = 'all';
+    const allTypeRadio = document.querySelector('#typeDropdown input[value="all"]');
+    if (allTypeRadio) allTypeRadio.checked = true;
+    updateTypeDisplayText();
+    
+    // Reset subjects
+    bankFilters.subjects = [];
+    document.querySelectorAll('#subjectsDropdown input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+    });
+    updateSubjectsDisplayText();
+    
+    // Reset source
+    bankFilters.questionSource = 'all';
+    const allSourceRadio = document.querySelector('#sourceDropdown input[value="all"]');
+    if (allSourceRadio) allSourceRadio.checked = true;
+    updateSourceDisplayText();
+    
+    updateSourceFilterVisibility();
+    updateActiveFiltersDisplay();
+    applyBankFilters();
+  }
+
+  /**
+   * Apply filters and re-render the list
+   * Filters client-side from already-fetched assignments
+   */
+  function applyBankFilters() {
+    if (!assignmentBank.isLoaded) return;
+    
+    const filtered = assignmentBank.assignments.filter(assignment => {
+      // Type filter
+      if (bankFilters.assignmentType !== 'all') {
+        if (assignment.assignmentType !== bankFilters.assignmentType) {
+          return false;
+        }
+      }
+      
+      // Source filter (special case: 'none' excludes all mcat-style)
+      if (bankFilters.questionSource === 'none') {
+        if (assignment.assignmentType === 'mcat-style') {
+          return false;
+        }
+      } else if (bankFilters.questionSource !== 'all') {
+        if (assignment.questionSource !== bankFilters.questionSource) {
+          return false;
+        }
+      }
+      
+      // Subject filter (match ANY selected subject)
+      if (bankFilters.subjects.length > 0) {
+        const assignmentSubjects = assignment.subjects || [];
+        const hasMatchingSubject = bankFilters.subjects.some(s => assignmentSubjects.includes(s));
+        if (!hasMatchingSubject) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    console.log('[BankFilters] Filtered to', filtered.length, 'of', assignmentBank.assignments.length, 'assignments');
+    
+    // Re-render with filtered results
+    renderFilteredAssignments(filtered);
+  }
+
+  /**
+   * Render filtered assignments
+   */
+  function renderFilteredAssignments(filtered) {
+    if (!assignmentBank.bankList) return;
+    
+    // Clear existing items
+    assignmentBank.bankList.innerHTML = '';
+    
+    if (filtered.length === 0) {
+      showBankEmpty(true, 'No assignments match your filters');
+      return;
+    }
+    
+    showBankEmpty(false);
+    
+    // Render each assignment
+    filtered.forEach(assignment => {
+      const item = createAssignmentItem(assignment);
+      assignmentBank.bankList.appendChild(item);
+    });
   }
 
   // ============================================

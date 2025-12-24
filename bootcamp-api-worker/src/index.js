@@ -767,6 +767,19 @@ async function createAssignment(env, data) {
   if (data.attachments && data.attachments.length > 0) {
     fields['Attachments'] = data.attachments;
   }
+  
+  // Number of questions
+  if (data.numberQuestions && data.numberQuestions > 0) {
+    fields['number_questions'] = data.numberQuestions;
+  }
+  
+  // UWorld QIDs - look up record IDs from the UWorld Question IDs table
+  if (data.uworldQids && data.uworldQids.length > 0) {
+    const uworldRecordIds = await lookupUworldQids(env, data.uworldQids);
+    if (uworldRecordIds.length > 0) {
+      fields['uworld_qids'] = uworldRecordIds;
+    }
+  }
 
   const airtableUrl = `https://api.airtable.com/v0/${baseId}/Assignments`;
   
@@ -792,4 +805,54 @@ async function createAssignment(env, data) {
     startDateTime: result.fields['start_date_time'],
     endDateTime: result.fields['end_date_time'],
   };
+}
+
+/**
+ * Look up UWorld Question IDs by QID string and return their Airtable record IDs
+ * @param {Object} env - Environment variables
+ * @param {string[]} qids - Array of QID strings (e.g., ["12345", "12346"])
+ * @returns {string[]} Array of Airtable record IDs
+ */
+async function lookupUworldQids(env, qids) {
+  const baseId = env.AIRTABLE_BASE_ID;
+  const token = env.AIRTABLE_TOKEN;
+  
+  if (!qids || qids.length === 0) return [];
+  
+  // Build OR formula to match any of the QIDs
+  // Assuming the QID field in the UWorld Question IDs table is called 'qid'
+  const qidFilters = qids.map(qid => `{qid} = "${qid}"`);
+  const filterFormula = qids.length === 1 
+    ? qidFilters[0] 
+    : `OR(${qidFilters.join(', ')})`;
+  
+  const params = new URLSearchParams({
+    filterByFormula: filterFormula,
+    'fields[0]': 'qid',
+  });
+  
+  const airtableUrl = `https://api.airtable.com/v0/${baseId}/UWorld%20Question%20IDs?${params.toString()}`;
+  
+  try {
+    const response = await fetch(airtableUrl, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to lookup UWorld QIDs:', await response.text());
+      return [];
+    }
+    
+    const data = await response.json();
+    const recordIds = (data.records || []).map(r => r.id);
+    
+    console.log(`[UWorld] Looked up ${qids.length} QIDs, found ${recordIds.length} records`);
+    return recordIds;
+    
+  } catch (err) {
+    console.error('Error looking up UWorld QIDs:', err);
+    return [];
+  }
 }
