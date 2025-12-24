@@ -828,6 +828,10 @@ h1 {
   border-radius: 6px;
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(150, 26, 50, 0.3);
+  flex-shrink: 0;
 }
 
 /* Shimmer animation */
@@ -854,12 +858,6 @@ h1 {
   50%, 100% {
     left: 100%;
   }
-}
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(150, 26, 50, 0.3);
-  flex-shrink: 0;
-  margin-top: 0;
 }
 
 .join-btn:hover {
