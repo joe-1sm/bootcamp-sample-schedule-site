@@ -1635,7 +1635,7 @@
     console.log('[Schedule] Creating assignment:', assignmentData);
     
     try {
-      const response = await fetch(`${API_BASE}/assignments`, {
+      const response = await fetch(`${API_URL}/assignments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1718,7 +1718,7 @@
     console.log('[Schedule] Refreshing calendar events...');
     
     try {
-      const url = new URL(API_BASE);
+      const url = new URL(API_URL);
       if (studentEmail) {
         url.searchParams.set('studentEmail', studentEmail);
       }
@@ -2001,7 +2001,7 @@
     console.log('[CustomForm] Creating custom assignment:', assignmentData);
     
     try {
-      const response = await fetch(`${API_BASE}/assignments`, {
+      const response = await fetch(`${API_URL}/assignments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
