@@ -391,6 +391,8 @@
     titleEl: document.getElementById("detailsTitle"),
     timeEl: document.getElementById("detailsTime"),
     descriptionEl: document.getElementById("detailsDescription"),
+    completionCheckbox: document.getElementById("completionCheckbox"),
+    completionInput: document.getElementById("completionInput"),
     container: document.getElementById("eventDetails"),
     card: document.querySelector(".details-card"),
     joinBtn: document.getElementById("joinBtn")
@@ -475,6 +477,7 @@
     initDaySwitcher(); // Initialize day switcher
     initVideoModal(); // Initialize video replay modal
     initWeekNavigation(); // Initialize week navigation
+    initCompletionCheckbox(); // Initialize completion toggle
     initAssignmentBank(); // Initialize assignment bank tabs
     initAssignmentPopup(); // Initialize assignment popup
     initCustomForm(); // Initialize custom assignment form
@@ -676,9 +679,14 @@
     const zIndex = Math.floor(startMinutes / 10);
 
     element.className = `calendar-event calendar-event--${event.type}`;
+    // Add completed class for homework assignments that are done
+    if (event.type === 'homework' && event.isCompleted) {
+      element.classList.add('calendar-event--completed');
+    }
     element.style.zIndex = zIndex;
     element.dataset.type = event.type;
     element.dataset.eventId = id;
+    element.dataset.completed = event.isCompleted ? 'true' : 'false';
     element.tabIndex = 0;
     element.setAttribute("role", "button");
     element.setAttribute("aria-label", `${event.title} on ${event.day} from ${formatRange(event.start, event.end)}`);
@@ -771,6 +779,11 @@
       details.joinBtn.href = "#";
     }
     
+    // Hide completion checkbox
+    if (details.completionCheckbox) {
+      details.completionCheckbox.classList.add("is-hidden");
+    }
+    
     // Hide floating button when no event is selected
     hideFloatingButton();
   }
@@ -784,6 +797,24 @@
     details.timeEl.classList.remove("is-hidden");
     details.timeEl.style.display = "block"; // Force display with inline style
     details.descriptionEl.innerHTML = eventData.description;
+    
+    // Show/hide completion checkbox (only for homework events)
+    if (details.completionCheckbox && details.completionInput) {
+      if (eventData.type === 'homework' && studentEmail) {
+        details.completionCheckbox.classList.remove("is-hidden");
+        details.completionInput.checked = eventData.isCompleted || false;
+        // Update label text based on state
+        const label = details.completionCheckbox.querySelector('.completion-checkbox__label');
+        if (label) {
+          label.textContent = eventData.isCompleted ? 'Completed!' : 'Mark Complete';
+        }
+        // Store current event data for toggle handler
+        details.completionCheckbox.dataset.eventId = eventData.id;
+        details.completionCheckbox.dataset.isCompleted = eventData.isCompleted ? 'true' : 'false';
+      } else {
+        details.completionCheckbox.classList.add("is-hidden");
+      }
+    }
     
     // Show/hide action button based on event type and links
     // Only show on embedded version (inside iframe)
@@ -1046,6 +1077,97 @@
         videoModal.body.innerHTML = '';
       }
     }, 300); // Wait for transition
+  }
+
+  // ============================================
+  // COMPLETION CHECKBOX FUNCTIONALITY
+  // ============================================
+  
+  /**
+   * Initialize the completion checkbox toggle for homework assignments
+   */
+  function initCompletionCheckbox() {
+    if (!details.completionInput) return;
+    
+    details.completionInput.addEventListener('change', async (e) => {
+      const isCompleted = e.target.checked;
+      const eventId = details.completionCheckbox?.dataset.eventId;
+      
+      if (!eventId) {
+        console.warn('[Completion] No event ID found');
+        e.target.checked = !isCompleted; // Revert
+        return;
+      }
+      
+      if (!assignmentBank.studentRecordId) {
+        alert('Unable to save completion status. Please refresh the page.');
+        e.target.checked = !isCompleted; // Revert
+        return;
+      }
+      
+      // Optimistically update UI
+      const label = details.completionCheckbox.querySelector('.completion-checkbox__label');
+      if (label) {
+        label.textContent = isCompleted ? 'Saving...' : 'Saving...';
+      }
+      details.completionInput.disabled = true;
+      
+      try {
+        const response = await fetch(`${API_URL}/assignments/${eventId}/toggle-complete`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            studentRecordId: assignmentBank.studentRecordId,
+            isCompleted,
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to update completion status');
+        }
+        
+        const result = await response.json();
+        console.log('[Completion] Toggle result:', result);
+        
+        // Update local event data
+        const eventIndex = events.findIndex(ev => ev.id === eventId);
+        if (eventIndex !== -1) {
+          events[eventIndex].isCompleted = isCompleted;
+        }
+        
+        // Update calendar block appearance
+        const eventBlock = document.querySelector(`[data-event-id="${eventId}"]`);
+        if (eventBlock) {
+          if (isCompleted) {
+            eventBlock.classList.add('calendar-event--completed');
+          } else {
+            eventBlock.classList.remove('calendar-event--completed');
+          }
+          eventBlock.dataset.completed = isCompleted ? 'true' : 'false';
+        }
+        
+        // Update checkbox data attribute
+        details.completionCheckbox.dataset.isCompleted = isCompleted ? 'true' : 'false';
+        
+        // Update label
+        if (label) {
+          label.textContent = isCompleted ? 'Completed!' : 'Mark Complete';
+        }
+        
+      } catch (error) {
+        console.error('[Completion] Error:', error);
+        alert(`Failed to update: ${error.message}`);
+        e.target.checked = !isCompleted; // Revert checkbox
+        if (label) {
+          label.textContent = !isCompleted ? 'Completed!' : 'Mark Complete';
+        }
+      } finally {
+        details.completionInput.disabled = false;
+      }
+    });
   }
 
   // ============================================

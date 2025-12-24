@@ -617,6 +617,29 @@ h1 {
   border: 1px solid #a0a0a0; /* Slightly darker gray border */
 }
 
+/* Completed homework - green with checkmark */
+.calendar-event--completed {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  border: 1px solid #16a34a;
+  position: relative;
+}
+
+.calendar-event--completed h3 {
+  text-decoration: line-through;
+  opacity: 0.9;
+}
+
+.calendar-event--completed::before {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
 .calendar-event h3 {
   margin: 0;
   font-size: 0.81rem;
@@ -676,6 +699,78 @@ h1 {
 .details-header {
   display: block;
   margin-bottom: 16px;
+  position: relative;
+}
+
+/* Completion checkbox - top right of details panel */
+.completion-checkbox {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.75rem;
+  color: var(--muted);
+  transition: color 0.2s ease;
+}
+
+.completion-checkbox:hover {
+  color: var(--text);
+}
+
+.completion-checkbox.is-hidden {
+  display: none;
+}
+
+.completion-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.completion-checkbox__box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.completion-checkbox__check {
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.15s ease;
+  stroke: #fff;
+}
+
+/* Checked state */
+.completion-checkbox input:checked + .completion-checkbox__box {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.completion-checkbox input:checked + .completion-checkbox__box .completion-checkbox__check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.completion-checkbox__label {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.completion-checkbox input:checked ~ .completion-checkbox__label {
+  color: #22c55e;
 }
 
 /* Join button - displayed below the time */

@@ -57,7 +57,7 @@ function getCorsHeaders(request) {
   
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
   };
@@ -94,6 +94,11 @@ export default {
       // Route: POST /assignments - Create new assignment
       if (request.method === 'POST' && path === '/assignments') {
         return await handleCreateAssignment(request, env, corsHeaders);
+      }
+
+      // Route: PATCH /assignments/:id/toggle-complete - Toggle assignment completion
+      if (request.method === 'PATCH' && path.startsWith('/assignments/') && path.endsWith('/toggle-complete')) {
+        return await handleToggleComplete(request, env, corsHeaders);
       }
 
       // 404 for unknown routes
@@ -361,6 +366,8 @@ async function fetchAssignments(env, studentEmail) {
     'student_side_description',
     'get_started_link',
     'student_email_addresses',
+    'students_completed',
+    'student',
     // Resource fields (optional)
     '1sm_resources',
     'aamc_passages',
@@ -382,20 +389,27 @@ async function fetchAssignments(env, studentEmail) {
   const records = await fetchAllPages(airtableUrl, token);
 
   // Transform and filter by student email
+  // We need to find which student record ID matches the email for completion check
+  const studentRecordId = await findStudentRecordId(env, studentEmail);
+  
   return records
-    .map(record => transformAssignment(record))
+    .map(record => transformAssignment(record, studentRecordId))
     .filter(assignment => filterByStudentEmail(assignment, studentEmail));
 }
 
 /**
  * Transform Assignments record to homework event format
  */
-function transformAssignment(record) {
+function transformAssignment(record, studentRecordId = null) {
   const fields = record.fields;
 
   const startDateTime = fields['start_date_time'];
   const endDateTime = fields['end_date_time'];
   const { day, start, end } = parseDateTimes(startDateTime, endDateTime);
+
+  // Check if this student has completed the assignment
+  const studentsCompleted = fields['students_completed'] || [];
+  const isCompleted = studentRecordId ? studentsCompleted.includes(studentRecordId) : false;
 
   return {
     id: record.id,
@@ -412,6 +426,9 @@ function transformAssignment(record) {
     videoEmbedCode: null,
     assignmentLink: fields['get_started_link'] || null,
     studentEmails: fields['student_email_addresses'] || [],
+    isCompleted,
+    studentsCompleted, // Keep for toggle logic
+    studentLinkedIds: fields['student'] || [], // Keep for toggle logic
     // Resources
     oneSmResources: fields['1sm_resources'] || [],
     aamcPassages: fields['aamc_passages'] || [],
@@ -878,4 +895,141 @@ async function lookupUworldQids(env, qids) {
     console.error('Error looking up UWorld QIDs:', err);
     return [];
   }
+}
+
+// ============================================
+// TOGGLE ASSIGNMENT COMPLETION
+// ============================================
+
+/**
+ * Find student record ID by email (simple wrapper for use in fetchAssignments)
+ */
+async function findStudentRecordId(env, email) {
+  if (!email) return null;
+  
+  const student = await lookupStudentByEmail(env, email);
+  return student ? student.id : null;
+}
+
+/**
+ * Handle PATCH /assignments/:id/toggle-complete
+ * Toggle whether a student has completed an assignment
+ */
+async function handleToggleComplete(request, env, corsHeaders) {
+  const url = new URL(request.url);
+  const pathParts = url.pathname.split('/');
+  // Path: /assignments/{id}/toggle-complete
+  const assignmentId = pathParts[2];
+
+  if (!assignmentId) {
+    return new Response(JSON.stringify({ error: 'Assignment ID required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { studentRecordId, isCompleted } = body;
+
+  if (!studentRecordId) {
+    return new Response(JSON.stringify({ error: 'studentRecordId required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const result = await toggleAssignmentCompletion(env, assignmentId, studentRecordId, isCompleted);
+    
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Toggle completion error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+/**
+ * Toggle assignment completion for a student
+ * @param {Object} env - Environment variables
+ * @param {string} assignmentId - Airtable record ID of the assignment
+ * @param {string} studentRecordId - Airtable record ID of the student
+ * @param {boolean} isCompleted - Whether to mark as completed (true) or not completed (false)
+ */
+async function toggleAssignmentCompletion(env, assignmentId, studentRecordId, isCompleted) {
+  const baseId = env.AIRTABLE_BASE_ID;
+  const token = env.AIRTABLE_TOKEN;
+
+  // First, fetch the current students_completed array
+  const getUrl = `https://api.airtable.com/v0/${baseId}/Assignments/${assignmentId}?fields[]=students_completed`;
+  
+  const getResponse = await fetch(getUrl, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!getResponse.ok) {
+    const errorText = await getResponse.text();
+    throw new Error(`Failed to fetch assignment: ${getResponse.status} - ${errorText}`);
+  }
+
+  const assignmentData = await getResponse.json();
+  const currentCompleted = assignmentData.fields?.students_completed || [];
+
+  // Calculate the new array
+  let newCompleted;
+  if (isCompleted) {
+    // Add student if not already in array
+    if (!currentCompleted.includes(studentRecordId)) {
+      newCompleted = [...currentCompleted, studentRecordId];
+    } else {
+      newCompleted = currentCompleted; // Already completed, no change needed
+    }
+  } else {
+    // Remove student from array
+    newCompleted = currentCompleted.filter(id => id !== studentRecordId);
+  }
+
+  // Update the record
+  const patchUrl = `https://api.airtable.com/v0/${baseId}/Assignments/${assignmentId}`;
+  
+  const patchResponse = await fetch(patchUrl, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      fields: {
+        'students_completed': newCompleted,
+      },
+    }),
+  });
+
+  if (!patchResponse.ok) {
+    const errorText = await patchResponse.text();
+    throw new Error(`Failed to update assignment: ${patchResponse.status} - ${errorText}`);
+  }
+
+  const result = await patchResponse.json();
+  
+  return {
+    id: result.id,
+    isCompleted,
+    studentsCompleted: result.fields.students_completed || [],
+  };
 }

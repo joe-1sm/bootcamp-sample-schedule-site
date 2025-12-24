@@ -242,6 +242,16 @@
         <div class="details-card" id="panelSession" role="tabpanel" aria-labelledby="tabSession" tabindex="-1">
           <div class="details-header">
             <p class="details-label">Selected session</p>
+            <!-- Completion checkbox (only for homework) -->
+            <label class="completion-checkbox is-hidden" id="completionCheckbox">
+              <input type="checkbox" id="completionInput" />
+              <span class="completion-checkbox__box">
+                <svg class="completion-checkbox__check" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="completion-checkbox__label">Mark Complete</span>
+            </label>
             <h2 class="details-title" id="detailsTitle">Choose any event</h2>
             <p class="details-time is-hidden" id="detailsTime"></p>
             <a 
@@ -674,6 +684,6 @@
       <p>&copy; 2025 1SM Bootcamp · Sample schedule for demo purposes</p>
     </footer>
 
-    <script src="script.js?v=10.9"></script>
+    <script src="script.js?v=11.0"></script>
   </body>
 </html>
