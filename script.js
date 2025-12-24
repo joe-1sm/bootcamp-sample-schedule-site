@@ -1146,13 +1146,42 @@
         return;
       }
       
-      // Optimistically update UI
       const label = details.completionCheckbox.querySelector('.completion-checkbox__label');
-      if (label) {
-        label.textContent = isCompleted ? 'Saving...' : 'Saving...';
-      }
-      details.completionInput.disabled = true;
       
+      // INSTANT UI UPDATE - don't wait for API
+      // Update local event data immediately
+      const eventIndex = events.findIndex(ev => ev.id === eventId);
+      if (eventIndex !== -1) {
+        events[eventIndex].isCompleted = isCompleted;
+      }
+      
+      // Update calendar block appearance immediately
+      const eventBlock = document.querySelector(`[data-event-id="${eventId}"]`);
+      if (eventBlock) {
+        if (isCompleted) {
+          eventBlock.classList.add('calendar-event--completed');
+        } else {
+          eventBlock.classList.remove('calendar-event--completed');
+        }
+        eventBlock.dataset.completed = isCompleted ? 'true' : 'false';
+      }
+      
+      // Update checkbox data attribute immediately
+      details.completionCheckbox.dataset.isCompleted = isCompleted ? 'true' : 'false';
+      
+      // Update label immediately
+      if (label) {
+        label.textContent = isCompleted ? 'Completed!' : 'Mark Complete';
+      }
+      
+      // Update title strikethrough in details panel immediately
+      if (isCompleted) {
+        details.titleEl.classList.add('details-title--completed');
+      } else {
+        details.titleEl.classList.remove('details-title--completed');
+      }
+      
+      // NOW make API call in background (non-blocking)
       try {
         const response = await fetch(`${API_URL}/assignments/${eventId}/toggle-complete`, {
           method: 'PATCH',
@@ -1171,49 +1200,40 @@
         }
         
         const result = await response.json();
-        console.log('[Completion] Toggle result:', result);
+        console.log('[Completion] Saved to database:', result);
         
-        // Update local event data
-        const eventIndex = events.findIndex(ev => ev.id === eventId);
+      } catch (error) {
+        console.error('[Completion] Error saving:', error);
+        
+        // REVERT all UI changes on error
+        e.target.checked = !isCompleted;
+        
         if (eventIndex !== -1) {
-          events[eventIndex].isCompleted = isCompleted;
+          events[eventIndex].isCompleted = !isCompleted;
         }
         
-        // Update calendar block appearance
-        const eventBlock = document.querySelector(`[data-event-id="${eventId}"]`);
         if (eventBlock) {
-          if (isCompleted) {
+          if (!isCompleted) {
             eventBlock.classList.add('calendar-event--completed');
           } else {
             eventBlock.classList.remove('calendar-event--completed');
           }
-          eventBlock.dataset.completed = isCompleted ? 'true' : 'false';
+          eventBlock.dataset.completed = !isCompleted ? 'true' : 'false';
         }
         
-        // Update checkbox data attribute
-        details.completionCheckbox.dataset.isCompleted = isCompleted ? 'true' : 'false';
+        details.completionCheckbox.dataset.isCompleted = !isCompleted ? 'true' : 'false';
         
-        // Update label
         if (label) {
-          label.textContent = isCompleted ? 'Completed!' : 'Mark Complete';
+          label.textContent = !isCompleted ? 'Completed!' : 'Mark Complete';
         }
         
-        // Update title strikethrough in details panel
-        if (isCompleted) {
+        if (!isCompleted) {
           details.titleEl.classList.add('details-title--completed');
         } else {
           details.titleEl.classList.remove('details-title--completed');
         }
         
-      } catch (error) {
-        console.error('[Completion] Error:', error);
-        alert(`Failed to update: ${error.message}`);
-        e.target.checked = !isCompleted; // Revert checkbox
-        if (label) {
-          label.textContent = !isCompleted ? 'Completed!' : 'Mark Complete';
-        }
-      } finally {
-        details.completionInput.disabled = false;
+        alert(`Failed to save: ${error.message}`);
       }
     });
   }
