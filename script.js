@@ -792,6 +792,12 @@
 
   function updateDetails(eventData) {
     details.titleEl.textContent = eventData.title;
+    // Add strikethrough for completed events
+    if (eventData.isCompleted) {
+      details.titleEl.classList.add('details-title--completed');
+    } else {
+      details.titleEl.classList.remove('details-title--completed');
+    }
     details.timeEl.textContent = `${eventData.day} · ${formatRange(
       eventData.start,
       eventData.end
@@ -1168,6 +1174,13 @@
         // Update label
         if (label) {
           label.textContent = isCompleted ? 'Completed!' : 'Mark Complete';
+        }
+        
+        // Update title strikethrough in details panel
+        if (isCompleted) {
+          details.titleEl.classList.add('details-title--completed');
+        } else {
+          details.titleEl.classList.remove('details-title--completed');
         }
         
       } catch (error) {

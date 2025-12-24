@@ -868,6 +868,11 @@ h1 {
   font-size: 1.2rem;
 }
 
+.details-title--completed {
+  text-decoration: line-through;
+  color: #666;
+}
+
 .details-time {
   margin: 0 0 8px;
   font-size: 1.0rem;
