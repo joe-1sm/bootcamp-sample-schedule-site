@@ -365,6 +365,8 @@
           videoEmbedCode: event.videoEmbedCode || null,  // YouTube embed iframe HTML
           // Completion tracking
           isCompleted: event.isCompleted || false,
+          // Creator tracking (for edit permissions)
+          isCreator: event.isCreator || false,
           // Additional data from Airtable
           aamcPassages: event.aamcPassages || [],
           aamcResources: event.aamcResources || [],
@@ -395,6 +397,7 @@
     descriptionEl: document.getElementById("detailsDescription"),
     completionCheckbox: document.getElementById("completionCheckbox"),
     completionInput: document.getElementById("completionInput"),
+    editBtn: document.getElementById("editAssignmentBtn"),
     container: document.getElementById("eventDetails"),
     card: document.querySelector(".details-card"),
     joinBtn: document.getElementById("joinBtn")
@@ -786,6 +789,14 @@
       details.completionCheckbox.classList.add("is-hidden");
     }
     
+    // Hide edit button
+    if (details.editBtn) {
+      details.editBtn.classList.add("is-hidden");
+    }
+    
+    // Remove title completed styling
+    details.titleEl.classList.remove('details-title--completed');
+    
     // Hide floating button when no event is selected
     hideFloatingButton();
   }
@@ -824,6 +835,16 @@
         details.completionCheckbox.dataset.isCompleted = eventData.isCompleted ? 'true' : 'false';
       } else {
         details.completionCheckbox.classList.add("is-hidden");
+      }
+    }
+    
+    // Show/hide edit button (only for creator-owned assignments)
+    if (details.editBtn) {
+      if (eventData.isCreator && studentEmail) {
+        details.editBtn.classList.remove("is-hidden");
+        details.editBtn.dataset.eventId = eventData.id;
+      } else {
+        details.editBtn.classList.add("is-hidden");
       }
     }
     
@@ -1898,6 +1919,10 @@
     submitBtn: null,
     submitText: null,
     successEl: null,
+    // Edit mode tracking
+    editMode: false,
+    editingEventId: null,
+    editingEventData: null,
   };
 
   /**
@@ -1929,6 +1954,11 @@
     const createBtn = document.getElementById('createCustomBtn');
     if (createBtn) {
       createBtn.addEventListener('click', openCustomForm);
+    }
+    
+    // Edit button (in details panel)
+    if (details.editBtn) {
+      details.editBtn.addEventListener('click', handleEditClick);
     }
     
     // Close handlers
@@ -2017,8 +2047,113 @@
   /**
    * Open custom form modal
    */
+  /**
+   * Handle edit button click - find the current event and open edit form
+   */
+  function handleEditClick() {
+    const eventId = details.editBtn?.dataset.eventId;
+    if (!eventId) {
+      console.warn('[CustomForm] No event ID found for edit');
+      return;
+    }
+    
+    // Find the event data
+    const eventData = events.find(e => e.id === eventId);
+    if (!eventData) {
+      console.warn('[CustomForm] Event not found for edit:', eventId);
+      return;
+    }
+    
+    openEditForm(eventData);
+  }
+
+  /**
+   * Open form in edit mode with pre-filled data
+   */
+  function openEditForm(eventData) {
+    if (!customForm.modal) return;
+    
+    // Set edit mode
+    customForm.editMode = true;
+    customForm.editingEventId = eventData.id;
+    customForm.editingEventData = eventData;
+    
+    // Reset form first
+    if (customForm.form) customForm.form.reset();
+    if (customForm.successEl) customForm.successEl.classList.add('is-hidden');
+    if (customForm.form) customForm.form.classList.remove('is-hidden');
+    
+    // Pre-fill form with event data
+    const titleInput = document.getElementById('customTitle');
+    const dateInput = document.getElementById('customDate');
+    const timeInput = document.getElementById('customTime');
+    const durationInput = document.getElementById('customDuration');
+    const linkInput = document.getElementById('customLink');
+    const notesInput = document.getElementById('customNotes');
+    
+    if (titleInput) titleInput.value = eventData.title || '';
+    
+    // Parse start datetime
+    if (eventData.startDateTime) {
+      const startDate = new Date(eventData.startDateTime);
+      if (dateInput) dateInput.value = startDate.toISOString().split('T')[0];
+      if (timeInput) timeInput.value = startDate.toTimeString().slice(0, 5);
+    }
+    
+    // Calculate duration from start/end times
+    if (eventData.startDateTime && eventData.endDateTime) {
+      const start = new Date(eventData.startDateTime);
+      const end = new Date(eventData.endDateTime);
+      const durationSeconds = Math.round((end - start) / 1000);
+      if (durationInput) {
+        // Find matching option or set closest
+        const options = Array.from(durationInput.options);
+        const exactMatch = options.find(opt => parseInt(opt.value) === durationSeconds);
+        if (exactMatch) {
+          durationInput.value = durationSeconds.toString();
+        }
+      }
+    }
+    
+    if (linkInput) linkInput.value = eventData.assignmentLink || '';
+    
+    // Notes - need to strip HTML for editing (description comes as HTML from API)
+    if (notesInput && eventData.description) {
+      // Create a temporary element to extract text from HTML
+      const temp = document.createElement('div');
+      temp.innerHTML = eventData.description;
+      notesInput.value = temp.textContent || temp.innerText || '';
+    }
+    
+    // Hide conditional fields for edit (these can't be edited easily)
+    if (customForm.sourceGroup) customForm.sourceGroup.classList.add('is-hidden');
+    if (customForm.qidsGroup) customForm.qidsGroup.classList.add('is-hidden');
+    if (customForm.numQuestionsGroup) customForm.numQuestionsGroup.classList.add('is-hidden');
+    
+    // Set button state for edit mode
+    if (customForm.submitBtn) customForm.submitBtn.disabled = false;
+    if (customForm.submitText) customForm.submitText.textContent = 'Save Changes';
+    
+    // Update modal title
+    const modalTitle = customForm.modal.querySelector('.custom-form__title');
+    if (modalTitle) modalTitle.textContent = 'Edit Assignment';
+    
+    // Show modal
+    customForm.modal.classList.remove('is-hidden');
+    
+    // Focus title input
+    if (titleInput) titleInput.focus();
+    
+    console.log('[CustomForm] Opened in edit mode for:', eventData.id);
+  }
+
   function openCustomForm() {
     if (!customForm.modal) return;
+    
+    // Reset edit mode
+    customForm.editMode = false;
+    customForm.editingEventId = null;
+    customForm.editingEventData = null;
     
     // Reset form
     if (customForm.form) customForm.form.reset();
@@ -2042,6 +2177,10 @@
     if (customForm.submitBtn) customForm.submitBtn.disabled = false;
     if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
     
+    // Reset modal title
+    const modalTitle = customForm.modal.querySelector('.custom-form__title');
+    if (modalTitle) modalTitle.textContent = 'Create Custom Assignment';
+    
     // Show modal
     customForm.modal.classList.remove('is-hidden');
     
@@ -2058,6 +2197,15 @@
   function closeCustomForm() {
     if (!customForm.modal) return;
     customForm.modal.classList.add('is-hidden');
+    
+    // Reset edit mode
+    customForm.editMode = false;
+    customForm.editingEventId = null;
+    customForm.editingEventData = null;
+    
+    // Reset modal title
+    const modalTitle = customForm.modal.querySelector('.custom-form__title');
+    if (modalTitle) modalTitle.textContent = 'Create Custom Assignment';
     console.log('[CustomForm] Closed');
   }
 
@@ -2089,7 +2237,9 @@
     
     // Disable button
     if (customForm.submitBtn) customForm.submitBtn.disabled = true;
-    if (customForm.submitText) customForm.submitText.textContent = 'Adding...';
+    if (customForm.submitText) {
+      customForm.submitText.textContent = customForm.editMode ? 'Saving...' : 'Adding...';
+    }
     
     // Calculate start and end times
     const startDate = new Date(`${dateVal}T${timeVal}:00`);
@@ -2146,31 +2296,74 @@
       numberQuestions: numberQuestions,
     };
     
-    console.log('[CustomForm] Creating custom assignment:', assignmentData);
-    
     try {
-      const response = await fetch(`${API_URL}/assignments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(assignmentData),
-      });
+      let response;
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create assignment');
+      if (customForm.editMode && customForm.editingEventId) {
+        // Edit mode - use PUT
+        console.log('[CustomForm] Updating assignment:', customForm.editingEventId, assignmentData);
+        
+        response = await fetch(`${API_URL}/assignments/${customForm.editingEventId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            studentRecordId: studentRecordId,
+            title: title,
+            startDateTime: startDate.toISOString(),
+            endDateTime: endDate.toISOString(),
+            getStartedLink: link,
+            description: notes,
+            estimatedTime: durationSeconds,
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to update assignment');
+        }
+        
+        const result = await response.json();
+        console.log('[CustomForm] Assignment updated:', result);
+        
+      } else {
+        // Create mode - use POST
+        console.log('[CustomForm] Creating custom assignment:', assignmentData);
+        
+        response = await fetch(`${API_URL}/assignments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(assignmentData),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create assignment');
+        }
+        
+        const result = await response.json();
+        console.log('[CustomForm] Assignment created:', result);
       }
-      
-      const result = await response.json();
-      console.log('[CustomForm] Assignment created:', result);
       
       // Show success
       if (customForm.form) customForm.form.classList.add('is-hidden');
-      if (customForm.successEl) customForm.successEl.classList.remove('is-hidden');
+      if (customForm.successEl) {
+        customForm.successEl.classList.remove('is-hidden');
+        // Update success message for edit mode
+        const successTitle = customForm.successEl.querySelector('h3');
+        if (successTitle) {
+          successTitle.textContent = customForm.editMode ? 'Assignment Updated!' : 'Assignment Created!';
+        }
+      }
       
       // Refresh calendar
       await refreshCalendarEvents();
+      
+      // Reset active state to refresh the details panel
+      resetActiveState();
       
       // Auto-close after delay
       setTimeout(() => {
@@ -2178,10 +2371,12 @@
       }, 1500);
       
     } catch (err) {
-      console.error('[CustomForm] Failed to create assignment:', err);
-      alert(`Failed to create assignment: ${err.message}`);
+      console.error('[CustomForm] Failed to save assignment:', err);
+      alert(`Failed to save assignment: ${err.message}`);
       if (customForm.submitBtn) customForm.submitBtn.disabled = false;
-      if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
+      if (customForm.submitText) {
+        customForm.submitText.textContent = customForm.editMode ? 'Save Changes' : 'Add to Calendar';
+      }
     }
   }
 

@@ -101,6 +101,11 @@ export default {
         return await handleToggleComplete(request, env, corsHeaders);
       }
 
+      // Route: PUT /assignments/:id - Update an existing assignment (creator only)
+      if (request.method === 'PUT' && path.startsWith('/assignments/') && !path.includes('/toggle-complete')) {
+        return await handleUpdateAssignment(request, env, corsHeaders);
+      }
+
       // 404 for unknown routes
       return new Response(JSON.stringify({ error: 'Not found' }), {
         status: 404,
@@ -266,6 +271,111 @@ async function handleCreateAssignment(request, env, corsHeaders) {
   });
 }
 
+/**
+ * PUT /assignments/:id - Update an existing assignment
+ * Only the creator can update their assignment
+ */
+async function handleUpdateAssignment(request, env, corsHeaders) {
+  const url = new URL(request.url);
+  const assignmentId = url.pathname.split('/')[2]; // Extract ID from /assignments/:id
+
+  if (!assignmentId) {
+    return new Response(JSON.stringify({ error: 'Assignment ID required' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { studentRecordId, title, startDateTime, endDateTime, description, getStartedLink, estimatedTime } = body;
+
+  if (!studentRecordId) {
+    return new Response(JSON.stringify({ error: 'studentRecordId required for authorization' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Verify the student is the creator of this assignment
+  const baseId = env.AIRTABLE_BASE_ID;
+  const token = env.AIRTABLE_TOKEN;
+
+  // Fetch the assignment to check creator
+  const getUrl = `https://api.airtable.com/v0/${baseId}/Assignments/${assignmentId}`;
+  const getResponse = await fetch(getUrl, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+
+  if (!getResponse.ok) {
+    return new Response(JSON.stringify({ error: 'Assignment not found' }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const existingRecord = await getResponse.json();
+  const creatorIds = existingRecord.fields?.student_creator || [];
+
+  if (!creatorIds.includes(studentRecordId)) {
+    return new Response(JSON.stringify({ error: 'Unauthorized: only the creator can edit this assignment' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Build update fields (only include fields that are provided)
+  const updateFields = {};
+  if (title !== undefined) updateFields['title'] = title;
+  if (startDateTime !== undefined) updateFields['start_date_time'] = startDateTime;
+  if (endDateTime !== undefined) updateFields['end_date_time'] = endDateTime;
+  if (description !== undefined) updateFields['student_side_description'] = description;
+  if (getStartedLink !== undefined) updateFields['get_started_link'] = getStartedLink;
+  if (estimatedTime !== undefined) updateFields['estimated_time'] = estimatedTime;
+
+  // Update the record
+  const patchResponse = await fetch(getUrl, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ fields: updateFields }),
+  });
+
+  if (!patchResponse.ok) {
+    const errorText = await patchResponse.text();
+    return new Response(JSON.stringify({ error: `Failed to update: ${errorText}` }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const updatedRecord = await patchResponse.json();
+
+  return new Response(JSON.stringify({
+    success: true,
+    assignment: {
+      id: updatedRecord.id,
+      title: updatedRecord.fields['title'],
+      startDateTime: updatedRecord.fields['start_date_time'],
+      endDateTime: updatedRecord.fields['end_date_time'],
+      description: updatedRecord.fields['student_side_description'],
+      getStartedLink: updatedRecord.fields['get_started_link'],
+    },
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 // ============================================
 // LIVE EVENTS (from CC-1 table)
 // ============================================
@@ -368,6 +478,7 @@ async function fetchAssignments(env, studentEmail) {
     'student_email_addresses',
     'students_completed',
     'student',
+    'student_creator',
     // Resource fields (optional)
     '1sm_resources',
     'aamc_passages',
@@ -411,6 +522,10 @@ function transformAssignment(record, studentRecordId = null) {
   const studentsCompleted = fields['students_completed'] || [];
   const isCompleted = studentRecordId ? studentsCompleted.includes(studentRecordId) : false;
 
+  // Check if this student created the assignment
+  const creatorIds = fields['student_creator'] || [];
+  const isCreator = studentRecordId ? creatorIds.includes(studentRecordId) : false;
+
   return {
     id: record.id,
     title: fields['title'] || 'Untitled Assignment',
@@ -429,6 +544,7 @@ function transformAssignment(record, studentRecordId = null) {
     isCompleted,
     studentsCompleted, // Keep for toggle logic
     studentLinkedIds: fields['student'] || [], // Keep for toggle logic
+    isCreator, // True if current student created this assignment
     // Resources
     oneSmResources: fields['1sm_resources'] || [],
     aamcPassages: fields['aamc_passages'] || [],
@@ -778,6 +894,7 @@ async function createAssignment(env, data) {
   const fields = {
     'title': data.title,
     'student': [data.studentRecordId], // Linked record to Student Roster
+    'student_creator': [data.studentRecordId], // Track who created this assignment
     'start_date_time': data.startDateTime,
     'end_date_time': data.endDateTime,
   };
