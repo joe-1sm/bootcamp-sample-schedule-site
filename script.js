@@ -363,6 +363,8 @@
           description: event.description || '',
           videoUrl: event.videoUrl || null,
           videoEmbedCode: event.videoEmbedCode || null,  // YouTube embed iframe HTML
+          // Completion tracking
+          isCompleted: event.isCompleted || false,
           // Additional data from Airtable
           aamcPassages: event.aamcPassages || [],
           aamcResources: event.aamcResources || [],
