@@ -809,6 +809,10 @@ h1 {
   flex-shrink: 0;
 }
 
+.edit-assignment-btn.is-hidden {
+  display: none;
+}
+
 /* Join button - displayed below the time */
 .join-btn {
   display: inline-flex;
