@@ -1594,10 +1594,9 @@
     const startDate = new Date(`${dateVal}T${timeVal}:00`);
     const endDate = new Date(startDate.getTime() + (popup.estimatedSeconds || 1800) * 1000);
     
-    // Get student record ID
-    const studentEmail = assignmentBank.studentEmail;
+    // Get student email from global variable (set at page load from URL params)
     if (!studentEmail) {
-      alert('Student email not found. Please refresh the page.');
+      alert('Student email not found. Please ensure the page URL includes ?studentEmail=your@email.com');
       if (popup.confirmText) popup.confirmText.textContent = 'Add to My Calendar';
       if (popup.confirmBtn) popup.confirmBtn.disabled = false;
       return;
@@ -1720,8 +1719,8 @@
     
     try {
       const url = new URL(API_BASE);
-      if (assignmentBank.studentEmail) {
-        url.searchParams.set('studentEmail', assignmentBank.studentEmail);
+      if (studentEmail) {
+        url.searchParams.set('studentEmail', studentEmail);
       }
       
       const response = await fetch(url.toString());
@@ -1948,10 +1947,9 @@
     const startDate = new Date(`${dateVal}T${timeVal}:00`);
     const endDate = new Date(startDate.getTime() + durationSeconds * 1000);
     
-    // Get student record ID
-    const studentEmail = assignmentBank.studentEmail;
+    // Get student email from global variable (set at page load from URL params)
     if (!studentEmail) {
-      alert('Student email not found. Please refresh the page.');
+      alert('Student email not found. Please ensure the page URL includes ?studentEmail=your@email.com');
       if (customForm.submitBtn) customForm.submitBtn.disabled = false;
       if (customForm.submitText) customForm.submitText.textContent = 'Add to Calendar';
       return;

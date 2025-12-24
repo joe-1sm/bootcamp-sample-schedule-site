@@ -28,9 +28,32 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:8888',
 ];
 
+// Patterns for dynamic origin matching (like Softr subdomains)
+const ALLOWED_ORIGIN_PATTERNS = [
+  /^https:\/\/.*\.softr\.app$/,  // Any Softr subdomain
+  /^https:\/\/.*\.softr\.io$/,   // Softr.io subdomains
+];
+
 function getCorsHeaders(request) {
   const origin = request.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  
+  // Check exact match first
+  let allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : null;
+  
+  // Check patterns if no exact match
+  if (!allowedOrigin) {
+    for (const pattern of ALLOWED_ORIGIN_PATTERNS) {
+      if (pattern.test(origin)) {
+        allowedOrigin = origin;
+        break;
+      }
+    }
+  }
+  
+  // Fallback to first allowed origin
+  if (!allowedOrigin) {
+    allowedOrigin = ALLOWED_ORIGINS[0];
+  }
   
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
