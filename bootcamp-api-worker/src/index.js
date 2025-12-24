@@ -450,6 +450,8 @@ function transformLiveEvent(record) {
     videoEmbedCode: fields['Video Embed Code'] || null,
     assignmentLink: null,
     studentEmails: [],
+    isCompleted: false, // Live events can't be completed
+    isCreator: false, // Live events can't be edited by students
   };
 }
 

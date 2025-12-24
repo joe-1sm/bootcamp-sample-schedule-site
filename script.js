@@ -838,9 +838,10 @@
       }
     }
     
-    // Show/hide edit button (only for creator-owned assignments)
+    // Show/hide edit button (only for homework assignments created by the current user)
     if (details.editBtn) {
-      if (eventData.isCreator && studentEmail) {
+      const isEditableAssignment = eventData.type === 'homework' && eventData.isCreator && studentEmail;
+      if (isEditableAssignment) {
         details.editBtn.classList.remove("is-hidden");
         details.editBtn.dataset.eventId = eventData.id;
       } else {
