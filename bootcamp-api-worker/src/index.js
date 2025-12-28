@@ -664,11 +664,17 @@ function markdownToHtml(text) {
     .replace(/\n\n/g, '</p><p>')
     // Convert single newlines to <br> (outside lists)
     .replace(/\n/g, '<br>')
-    // Clean up: remove <br> after headers and list elements
+    // Clean up: remove <br> after/before list elements
     .replace(/(<\/h[1-4]>)<br>/g, '$1')
     .replace(/(<\/li>)<br>/g, '$1')
     .replace(/(<\/ul>)<br>/g, '$1')
-    .replace(/(<ul>)<br>/g, '$1')
+    .replace(/(<ul[^>]*>)<br>/g, '$1')
+    .replace(/<br>(<ul)/g, '$1')
+    .replace(/<br>(<\/ul>)/g, '$1')
+    .replace(/<br>(<li>)/g, '$1')
+    // Also clean up </p><p> around list elements
+    .replace(/<\/p><p>(<ul)/g, '$1')
+    .replace(/(<\/ul>)<\/p><p>/g, '$1')
     // Wrap in paragraph tags if content has paragraph breaks
     .replace(/^(.*)$/s, (match) => {
       if (match.includes('</p><p>')) {
@@ -689,8 +695,26 @@ function parseNestedLists(text) {
   const output = [];
   let listStack = []; // Track open list levels
   
+  // Helper to check if next non-empty line is a bullet
+  function nextNonEmptyIsBullet(startIdx) {
+    for (let j = startIdx + 1; j < lines.length; j++) {
+      const nextLine = lines[j].trim();
+      if (nextLine === '') continue; // Skip empty lines
+      // Check if it's any kind of bullet
+      return /^-\s+/.test(lines[j]) || /^\s+-\s+/.test(lines[j]);
+    }
+    return false;
+  }
+  
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    
+    // Skip empty lines if we're in a list context and next content is also a bullet
+    if (line.trim() === '' && listStack.length > 0) {
+      if (nextNonEmptyIsBullet(i)) {
+        continue; // Skip this empty line entirely
+      }
+    }
     
     // Check for bullet patterns:
     // 1. "- - text" = sub-bullet (Airtable style)
