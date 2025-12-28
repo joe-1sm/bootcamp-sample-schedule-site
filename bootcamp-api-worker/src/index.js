@@ -632,19 +632,17 @@ function parseDateTimes(startDateTime, endDateTime) {
 
 /**
  * Convert Airtable Markdown to HTML
+ * Handles nested bullet lists based on indentation
  */
 function markdownToHtml(text) {
   if (!text) return '';
   
-  return text
+  // First pass: inline formatting
+  let result = text
     // Convert headers (must come before other processing)
-    // #### Header 4
     .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
-    // ### Header 3
     .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
-    // ## Header 2
     .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
-    // # Header 1
     .replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
     // Convert **bold** to <strong> (must come before single *)
     .replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>')
@@ -655,17 +653,22 @@ function markdownToHtml(text) {
     // Convert _italic_ to <em> (but not inside words like some_variable)
     .replace(/(?<![a-zA-Z0-9])_([^_]+?)_(?![a-zA-Z0-9])/g, '<em>$1</em>')
     // Convert [link text](url) to <a>
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    // Convert bullet lists (- item)
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    // Wrap consecutive <li> elements in <ul>
-    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
-    // Convert double newlines to paragraph breaks
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  
+  // Second pass: handle nested lists properly
+  result = parseNestedLists(result);
+  
+  // Third pass: paragraphs and line breaks (but not inside lists)
+  result = result
+    // Convert double newlines to paragraph breaks (outside lists)
     .replace(/\n\n/g, '</p><p>')
-    // Convert single newlines to <br>
+    // Convert single newlines to <br> (outside lists)
     .replace(/\n/g, '<br>')
-    // Clean up: remove <br> after headers (they already have block display)
+    // Clean up: remove <br> after headers and list elements
     .replace(/(<\/h[1-4]>)<br>/g, '$1')
+    .replace(/(<\/li>)<br>/g, '$1')
+    .replace(/(<\/ul>)<br>/g, '$1')
+    .replace(/(<ul>)<br>/g, '$1')
     // Wrap in paragraph tags if content has paragraph breaks
     .replace(/^(.*)$/s, (match) => {
       if (match.includes('</p><p>')) {
@@ -673,6 +676,98 @@ function markdownToHtml(text) {
       }
       return match;
     });
+  
+  return result;
+}
+
+/**
+ * Parse nested bullet lists based on indentation
+ * Handles: - item, - - subitem (Airtable style), and indented - subitem
+ */
+function parseNestedLists(text) {
+  const lines = text.split('\n');
+  const output = [];
+  let listStack = []; // Track open list levels
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Check for bullet patterns:
+    // 1. "- - text" = sub-bullet (Airtable style)
+    // 2. "    - text" or "  - text" = indented sub-bullet
+    // 3. "- text" = primary bullet
+    
+    const subBulletMatch = line.match(/^-\s+-\s+(.+)$/);
+    const indentedBulletMatch = line.match(/^(\s{2,})-\s+(.+)$/);
+    const primaryBulletMatch = line.match(/^-\s+(.+)$/);
+    
+    if (subBulletMatch) {
+      // Sub-bullet: "- - text"
+      const content = subBulletMatch[1];
+      
+      // Ensure we have a primary list open
+      if (listStack.length === 0) {
+        output.push('<ul>');
+        listStack.push(1);
+      }
+      // Open sub-list if not already at level 2
+      if (listStack.length === 1) {
+        output.push('<ul class="nested">');
+        listStack.push(2);
+      }
+      output.push(`<li>${content}</li>`);
+      
+    } else if (indentedBulletMatch) {
+      // Indented bullet: "  - text" or "    - text"
+      const indent = indentedBulletMatch[1].length;
+      const content = indentedBulletMatch[2];
+      const level = Math.floor(indent / 2) + 1; // 2 spaces = level 2, 4 spaces = level 3, etc.
+      
+      // Ensure we have appropriate list depth
+      while (listStack.length < level) {
+        output.push('<ul class="nested">');
+        listStack.push(listStack.length + 1);
+      }
+      // Close lists if we're going back up
+      while (listStack.length > level) {
+        output.push('</ul>');
+        listStack.pop();
+      }
+      output.push(`<li>${content}</li>`);
+      
+    } else if (primaryBulletMatch) {
+      // Primary bullet: "- text"
+      const content = primaryBulletMatch[1];
+      
+      // Close any nested lists first
+      while (listStack.length > 1) {
+        output.push('</ul>');
+        listStack.pop();
+      }
+      // Open primary list if not open
+      if (listStack.length === 0) {
+        output.push('<ul>');
+        listStack.push(1);
+      }
+      output.push(`<li>${content}</li>`);
+      
+    } else {
+      // Not a bullet - close all open lists
+      while (listStack.length > 0) {
+        output.push('</ul>');
+        listStack.pop();
+      }
+      output.push(line);
+    }
+  }
+  
+  // Close any remaining open lists
+  while (listStack.length > 0) {
+    output.push('</ul>');
+    listStack.pop();
+  }
+  
+  return output.join('\n');
 }
 
 // ============================================

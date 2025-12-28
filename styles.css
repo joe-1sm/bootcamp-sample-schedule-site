@@ -984,6 +984,16 @@ h1 {
 .details-description ul {
   margin: 0.5em 0;
   padding-left: 1.25em;
+  list-style-type: disc;
+}
+
+.details-description ul.nested {
+  margin: 0.25em 0;
+  list-style-type: circle;
+}
+
+.details-description ul.nested ul.nested {
+  list-style-type: square;
 }
 
 .details-description li {
@@ -2337,6 +2347,16 @@ h1 {
 .popup-description__content ul {
   margin: 0.5em 0;
   padding-left: 1.25em;
+  list-style-type: disc;
+}
+
+.popup-description__content ul.nested {
+  margin: 0.25em 0;
+  list-style-type: circle;
+}
+
+.popup-description__content ul.nested ul.nested {
+  list-style-type: square;
 }
 
 .popup-description__content li {
