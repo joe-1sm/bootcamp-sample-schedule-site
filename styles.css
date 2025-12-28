@@ -957,6 +957,39 @@ h1 {
   white-space: pre-line;
 }
 
+/* Markdown headers in description */
+.details-description h1,
+.details-description h2,
+.details-description h3,
+.details-description h4 {
+  color: var(--text);
+  margin: 0.8em 0 0.4em 0;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.details-description h1:first-child,
+.details-description h2:first-child,
+.details-description h3:first-child,
+.details-description h4:first-child {
+  margin-top: 0;
+}
+
+.details-description h1 { font-size: 1.1rem; }
+.details-description h2 { font-size: 1rem; }
+.details-description h3 { font-size: 0.95rem; }
+.details-description h4 { font-size: 0.9rem; }
+
+/* Lists in description */
+.details-description ul {
+  margin: 0.5em 0;
+  padding-left: 1.25em;
+}
+
+.details-description li {
+  margin: 0.25em 0;
+}
+
 .floating-details-btn {
   position: fixed;
   bottom: 24px;
@@ -2275,6 +2308,39 @@ h1 {
 
 .popup-description__content p:last-child {
   margin-bottom: 0;
+}
+
+/* Markdown headers in popup description */
+.popup-description__content h1,
+.popup-description__content h2,
+.popup-description__content h3,
+.popup-description__content h4 {
+  color: var(--text);
+  margin: 0.8em 0 0.4em 0;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.popup-description__content h1:first-child,
+.popup-description__content h2:first-child,
+.popup-description__content h3:first-child,
+.popup-description__content h4:first-child {
+  margin-top: 0;
+}
+
+.popup-description__content h1 { font-size: 1.1rem; }
+.popup-description__content h2 { font-size: 1rem; }
+.popup-description__content h3 { font-size: 0.95rem; }
+.popup-description__content h4 { font-size: 0.9rem; }
+
+/* Lists in popup description */
+.popup-description__content ul {
+  margin: 0.5em 0;
+  padding-left: 1.25em;
+}
+
+.popup-description__content li {
+  margin: 0.25em 0;
 }
 
 /* Footer (action buttons) */

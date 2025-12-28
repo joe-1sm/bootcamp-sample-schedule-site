@@ -637,6 +637,15 @@ function markdownToHtml(text) {
   if (!text) return '';
   
   return text
+    // Convert headers (must come before other processing)
+    // #### Header 4
+    .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
+    // ### Header 3
+    .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
+    // ## Header 2
+    .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+    // # Header 1
+    .replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
     // Convert **bold** to <strong> (must come before single *)
     .replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>')
     // Convert __bold__ to <strong> (must come before single _)
@@ -655,6 +664,8 @@ function markdownToHtml(text) {
     .replace(/\n\n/g, '</p><p>')
     // Convert single newlines to <br>
     .replace(/\n/g, '<br>')
+    // Clean up: remove <br> after headers (they already have block display)
+    .replace(/(<\/h[1-4]>)<br>/g, '$1')
     // Wrap in paragraph tags if content has paragraph breaks
     .replace(/^(.*)$/s, (match) => {
       if (match.includes('</p><p>')) {
