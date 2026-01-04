@@ -24,7 +24,7 @@
   ];
 
   // Current week state (0-indexed, starts at Week 3)
-  let currentWeekIndex = 2;
+  let currentWeekIndex = 3;
 
   // Generate days array for a given week
   function getDaysForWeek(weekIndex) {
