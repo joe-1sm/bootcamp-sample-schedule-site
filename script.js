@@ -23,8 +23,8 @@
     { week: 9, start: "2026-02-07", end: "2026-02-13", label: "February 7 – 13, 2026" },
   ];
 
-  // Current week state (0-indexed, starts at Week 3)
-  let currentWeekIndex = 3;
+  // Current week state (0-indexed, starts at Week 6)
+  let currentWeekIndex = 5;
 
   // Generate days array for a given week
   function getDaysForWeek(weekIndex) {
